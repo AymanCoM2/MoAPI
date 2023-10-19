@@ -11,8 +11,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // Make the Connection With the "100" DB on the YZ network First and Get Data 
 // Then Filter Data and Parse them Into Json 
-
-
 // First Of all We Will Need An endpoint as a Sample Data For the json Data 
 // & /api/sample
 Route::get('/sample/{phoneNumber}', function (Request $request) {
@@ -67,3 +65,17 @@ Route::get('/sample/{phoneNumber}', function (Request $request) {
         'allUserInvoices' => $allUserInvoices,
     ]);
 });
+
+
+/**
+ *  1- Endpoint for the Current Month Invoices 
+ * 
+ *  2- Invoice For a Certain Range 
+ * 
+ *  3- Endpoint to get the DocEntry and Return the Items Of this invoice 
+ * 
+ *  4- Endpoint to Get invoice For a "Certain Specific Date" 
+ * 
+ *  5- 
+ * 
+ */
