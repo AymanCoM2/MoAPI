@@ -18,7 +18,7 @@ function getAllCustomerDocEntries($mobileNumber)
         $userDocEntries[] = $value->DocEntry;
     }
     return $userDocEntries; // ^ All Invocies Numbers For this User  , It is ARRAY
-}
+} // ! Ok 
 
 function getSingleInvoiceGeneralData($docEntry)
 {
@@ -38,7 +38,7 @@ function getSingleInvoiceGeneralData($docEntry)
     T0.CANCELED ='N' and T0.DocEntry = " . $docEntry;
     $generalData = DB::connection('sqlsrv')->select($generalInfoQuery);
     return $generalData;  // ! General Data about invoice itself
-}
+} // ! Ok 
 
 function getSingleInvoiceItemsData($docEntry)
 {
@@ -56,7 +56,7 @@ function getSingleInvoiceItemsData($docEntry)
     T1.DocEntry = " . $docEntry;
     $invoiceItemsData = DB::connection('sqlsrv')->select($invoiceItemsQuery);
     return $invoiceItemsData; // ! Data About Items themselves 
-}
+} // ! Ok 
 
 function getSingleInvoiceTotalData($docEntry)
 {
@@ -67,7 +67,7 @@ function getSingleInvoiceTotalData($docEntry)
         'invoiceItemsData' => $invoiceItems
     ];
     return $totalInvoiceData;
-}
+} // ! Ok 
 
 function getAllCustomerDocEntriesWithData($docEntriesArray)
 {
@@ -76,36 +76,54 @@ function getAllCustomerDocEntriesWithData($docEntriesArray)
         $finalArrayOfAllInvoicesWithData[$singleDocEntry] = getSingleInvoiceTotalData($singleDocEntry);
     }
     return $finalArrayOfAllInvoicesWithData;
-}
-
-function getAllInvoicesGeneralData($docEntriesArray)
-{
-    $finalArrayOfGeneral = [];
-    foreach ($docEntriesArray as $singleDocEntry) {
-        $invoiceDates  = [
-            // $singleDocEntry)[0] // ! TODO 
-            "DocDate" => getSingleInvoiceGeneralData($singleDocEntry)[0]->DocDate,
-            "DocDueDate" => getSingleInvoiceGeneralData($singleDocEntry)[0]->DocDueDate
-        ];
-        $finalArrayOfGeneral[$singleDocEntry] = $invoiceDates;
-    }
-    return $finalArrayOfGeneral;
-}
-
+} // ! Ok 
 
 function getAllCustomerInvoicesDates($docEntriesArray)
 {
-    $arrayOfDates  = [];
+    $finalArrayOfInvoicesWithDates = [];
     foreach ($docEntriesArray as $singleDocEntry) {
-        $dummyArr  = [
-            "DocDate" => getSingleInvoiceTotalData($singleDocEntry)['DocDate'],
-            "DocDueDate" => getSingleInvoiceTotalData($singleDocEntry)['DocDueDate']
+        $dDate = new DateTime(getSingleInvoiceGeneralData($singleDocEntry)[0]->DocDate);
+        $ddDate = new DateTime(getSingleInvoiceGeneralData($singleDocEntry)[0]->DocDueDate);
+        $invoiceDates  = [
+            // $singleDocEntry)[0] // ! TODO 
+            "DocDate" => $dDate->format('Y-m-d'),
+            "DocDueDate" => $ddDate->format('Y-m-d')
         ];
-        $arrayOfDates[$singleDocEntry] = $dummyArr;
+        $finalArrayOfInvoicesWithDates[$singleDocEntry] = $invoiceDates;
     }
-    return $arrayOfDates;
+    return $finalArrayOfInvoicesWithDates;
 }
 
+function manipulateInvoicesDates($entriesAndDates)
+{
+    // $entriesAndDates Is an associative array 
+    // Each KEy is a Number Of Invoice 
+    //  Each Value is Array Of Two Keys : DocDate && DocDueDate in this Format format('Y-m-d')
+    // This is an Example Of the $entriesAndDates with Invoice Number 3 with its associated Dates 
+    /**
+     *  ["3" =>[
+     *    "DocDate" => 2018-01-09,
+     *    "DocDueDate" => 2018-01-09
+     * ]]
+     */
+    // 1- range , 2-currentMonth , 3-specific Date
+}
+
+
+function getInvoicesInRange($entriesAndDates, $startDate, $endDate)
+{
+    $filteredInvoices = [];
+    foreach ($entriesAndDates as $invoiceNumber => $dates) {
+        $docDate = date_create_from_format('Y-m-d', $dates['DocDate']);
+        $docDueDate = date_create_from_format('Y-m-d', $dates['DocDueDate']);
+        if ($docDate >= $startDate && $docDate <= $endDate) {
+            // ! TODO docDate FOR BOTH ??? 
+            // Invoice dates are within the specified range
+            $filteredInvoices[$invoiceNumber] = $dates;
+        }
+    }
+    return $filteredInvoices;
+}
 
 // http://127.0.0.1:8000/api/current-month/0553142429/5
 Route::get('/current-month/{phoneNumber}/{monthNumber}', function (Request $request) {
@@ -133,9 +151,10 @@ Route::get('/specific-date/{dateInput}', function (Request $request) {
 
 
 // & http://127.0.0.1:8000/api/test/0553142429
-Route::get('/test/{phoneNumber}', function (Request $request) {
-    $finalArr = getAllInvoicesGeneralData(getAllCustomerDocEntries($request->phoneNumber));
+Route::get('/test', function (Request $request) {
+    $resultOfDates = getAllCustomerInvoicesDates(getAllCustomerDocEntries("0553142429"));
+    $x = getInvoicesInRange($resultOfDates, "2018-01-01", "2020-01-01");
     return response()->json([
-        'finalArr' => $finalArr
+        'x' => $x
     ]);
 });
