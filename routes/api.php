@@ -106,24 +106,46 @@ function manipulateInvoicesDates($entriesAndDates)
      *    "DocDueDate" => 2018-01-09
      * ]]
      */
-    // 1- range , 2-currentMonth , 3-specific Date
+    // 2-currentMonth 
 }
 
 
 function getInvoicesInRange($entriesAndDates, $startDate, $endDate)
 {
     $filteredInvoices = [];
+    $startDateObj = new DateTime($startDate);
+    $endDateObj = new DateTime($endDate);
     foreach ($entriesAndDates as $invoiceNumber => $dates) {
-        $docDate = date_create_from_format('Y-m-d', $dates['DocDate']);
-        $docDueDate = date_create_from_format('Y-m-d', $dates['DocDueDate']);
-        if ($docDate >= $startDate && $docDate <= $endDate) {
-            // ! TODO docDate FOR BOTH ??? 
-            // Invoice dates are within the specified range
+        $docDateObj = new DateTime($dates['DocDate']);
+        if ($docDateObj >= $startDateObj && $docDateObj <= $endDateObj) {
             $filteredInvoices[$invoiceNumber] = $dates;
         }
     }
     return $filteredInvoices;
 }
+
+function getInvoiceInDate($entriesAndDates, $specificDate)
+{
+    $matchingEntries = array();
+    // Iterate through each entry in $entriesAndDates
+    foreach ($entriesAndDates as $invoiceNumber => $entry) {
+        // Check if the entry has both "DocDate" and "DocDueDate" keys
+        if (isset($entry["DocDate"]) && isset($entry["DocDueDate"])) {
+            // Compare the "DocDate" to the $specificDate
+            if ($entry["DocDate"] === $specificDate) {
+                // If it matches, add it to the $matchingEntries array
+                $matchingEntries[$invoiceNumber] = $entry;
+            }
+        }
+    }
+    return $matchingEntries;
+}
+
+function getInvoicesOfCurrentMonth($entriesAndDates)
+{
+
+}
+
 
 // http://127.0.0.1:8000/api/current-month/0553142429/5
 Route::get('/current-month/{phoneNumber}/{monthNumber}', function (Request $request) {
@@ -150,11 +172,12 @@ Route::get('/specific-date/{dateInput}', function (Request $request) {
 });
 
 
-// & http://127.0.0.1:8000/api/test/0553142429
+// & http://127.0.0.1:8000/api/test
 Route::get('/test', function (Request $request) {
     $resultOfDates = getAllCustomerInvoicesDates(getAllCustomerDocEntries("0553142429"));
-    $x = getInvoicesInRange($resultOfDates, "2018-01-01", "2020-01-01");
+    $x = getInvoiceInDate($resultOfDates, "2018-12-02");
     return response()->json([
+        'resultOfDates' => $resultOfDates,
         'x' => $x
     ]);
 });
