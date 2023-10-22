@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -94,22 +95,6 @@ function getAllCustomerInvoicesDates($docEntriesArray)
     return $finalArrayOfInvoicesWithDates;
 }
 
-function manipulateInvoicesDates($entriesAndDates)
-{
-    // $entriesAndDates Is an associative array 
-    // Each KEy is a Number Of Invoice 
-    //  Each Value is Array Of Two Keys : DocDate && DocDueDate in this Format format('Y-m-d')
-    // This is an Example Of the $entriesAndDates with Invoice Number 3 with its associated Dates 
-    /**
-     *  ["3" =>[
-     *    "DocDate" => 2018-01-09,
-     *    "DocDueDate" => 2018-01-09
-     * ]]
-     */
-    // 2-currentMonth 
-}
-
-
 function getInvoicesInRange($entriesAndDates, $startDate, $endDate)
 {
     $filteredInvoices = [];
@@ -122,7 +107,7 @@ function getInvoicesInRange($entriesAndDates, $startDate, $endDate)
         }
     }
     return $filteredInvoices;
-}
+} // ! Ok 
 
 function getInvoiceInDate($entriesAndDates, $specificDate)
 {
@@ -139,11 +124,27 @@ function getInvoiceInDate($entriesAndDates, $specificDate)
         }
     }
     return $matchingEntries;
-}
+} // ! Ok 
 
 function getInvoicesOfCurrentMonth($entriesAndDates)
 {
+   
 
+}
+
+function manipulateInvoicesDates($entriesAndDates)
+{
+    // $entriesAndDates Is an associative array 
+    // Each KEy is a Number Of Invoice 
+    //  Each Value is Array Of Two Keys : DocDate && DocDueDate in this Format format('Y-m-d')
+    // This is an Example Of the $entriesAndDates with Invoice Number 3 with its associated Dates 
+    /**
+     *  ["3" =>[
+     *    "DocDate" => 2018-01-09,
+     *    "DocDueDate" => 2018-01-09
+     * ]]
+     */
+    // 2-currentMonth 
 }
 
 
