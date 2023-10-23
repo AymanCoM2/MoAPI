@@ -198,30 +198,6 @@ Route::get('/specific-date/{dateInput}', function (Request $request) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // http://10.10.10.66:8005/api/user-docs/0553142429
 Route::get('/user-docs/{phoneNumber}', function (Request $request) {
     $inputPhoneNumber = $request->phoneNumber;
