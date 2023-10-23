@@ -30,9 +30,10 @@ function getAllCustomerDocEntries($mobileNumber)
 {
     // MobileNumber is a View The Has Phone Number and the DocEntry For this User 
     $phoneQuery  = "SELECT * FROM MobileNumber WHERE [Mobile Number] = '" . $mobileNumber . "'";
-    $phoneQueryResult  = DB::connection('sqlsrv')->select($phoneQuery);
+    $result  = ubuntuConnectionDB($phoneQuery);
+    // $phoneQueryResult  = DB::connection('sqlsrv')->select($phoneQuery);
     $userDocEntries  = [];
-    foreach ($phoneQueryResult as $key => $value) {
+    foreach ($result as $key => $value) {
         $userDocEntries[] = $value->DocEntry;
     }
     return $userDocEntries; // ^ All Invocies Numbers For this User  , It is ARRAY
