@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
 function ubuntuConnectionDB($inputQuery)
 {
     $serverName = "10.10.10.100";
@@ -15,28 +16,23 @@ function ubuntuConnectionDB($inputQuery)
     $pwd = "admin@1234";
     $options = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::SQLSRV_ATTR_FETCHES_NUMERIC_TYPE => true,
         "TrustServerCertificate" => true,
     ];
     $conn = new PDO("sqlsrv:server = $serverName; Database = $databaseName;", $uid, $pwd, $options);
     $stmt = $conn->query($inputQuery);
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $data[] = $row; // Append each row to the $data array
-    }
-    return $data;
+    return $stmt;
 }
 
 function getAllCustomerDocEntries($mobileNumber)
 {
-    // MobileNumber is a View The Has Phone Number and the DocEntry For this User 
+    //* MobileNumber is a View The Has Phone Number and the DocEntry For this User 
     $phoneQuery  = "SELECT * FROM MobileNumber WHERE [Mobile Number] = '" . $mobileNumber . "'";
-    $result  = ubuntuConnectionDB($phoneQuery);
-    // $phoneQueryResult  = DB::connection('sqlsrv')->select($phoneQuery);
-    // $userDocEntries  = [];
-    // foreach ($result as $key => $value) {
-    //     $userDocEntries[] = $value->DocEntry;
-    // }
-    return $result; // ^ All Invocies Numbers For this User  , It is ARRAY
+    $stmt  = ubuntuConnectionDB($phoneQuery);
+    while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+        $data[] = $row->DocEntry;
+    }
+    //* Row is Object Because of 'PDO::FETCH_OBJ' , $data is Array 
+    return $data;
 } // ! Ok 
 
 function getSingleInvoiceGeneralData($docEntry)
@@ -185,14 +181,11 @@ Route::get('/test', function (Request $request) {
 
 
 
-
 // http://10.10.10.66:8005/api/user-docs/0553142429
 Route::get('/user-docs/{phoneNumber}', function (Request $request) {
     $inputPhoneNumber = $request->phoneNumber;
     $userDocs  = getAllCustomerDocEntries($inputPhoneNumber);
-    return response()->json([
-        'userDocs' => $userDocs
-    ]);
+    return response()->json($userDocs);
 }); // * EndPoint Number 3 
 
 // http://10.10.10.66:8005/api/current-month/0553142429
