@@ -20,7 +20,7 @@ function ubuntuConnectionDB($inputQuery)
     ];
     $conn = new PDO("sqlsrv:server = $serverName; Database = $databaseName;", $uid, $pwd, $options);
     $stmt = $conn->query($inputQuery);
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    while ($row = $stmt->fetch(PDO::FETCH_CLASS)) {
         $data[] = $row; // Append each row to the $data array
     }
     return $data;
