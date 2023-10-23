@@ -4,9 +4,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 
 function ubuntuConnectionDB($inputQuery)
 {
@@ -21,19 +21,19 @@ function ubuntuConnectionDB($inputQuery)
     $conn = new PDO("sqlsrv:server = $serverName; Database = $databaseName;", $uid, $pwd, $options);
     $stmt = $conn->query($inputQuery);
     return $stmt;
-}
+} // ? DONE 
 
 function getAllCustomerDocEntries($mobileNumber)
 {
     //* MobileNumber is a View The Has Phone Number and the DocEntry For this User 
+    //* Row is Object Because of 'PDO::FETCH_OBJ' , $data is Array 
     $phoneQuery  = "SELECT * FROM MobileNumber WHERE [Mobile Number] = '" . $mobileNumber . "'";
     $stmt  = ubuntuConnectionDB($phoneQuery);
     while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
         $data[] = $row->DocEntry;
     }
-    //* Row is Object Because of 'PDO::FETCH_OBJ' , $data is Array 
     return $data;
-} // ! Ok 
+} // ? DONE 
 
 function getSingleInvoiceGeneralData($docEntry)
 {
@@ -51,9 +51,17 @@ function getSingleInvoiceGeneralData($docEntry)
     LEFT JOIN  AljouaiT.DBO.OUSR T00 ON T0.USERSIGN = T00.INTERNAL_K
     WHERE 
     T0.CANCELED ='N' and T0.DocEntry = " . $docEntry;
-    $generalData = DB::connection('sqlsrv')->select($generalInfoQuery);
-    return $generalData;  // ! General Data about invoice itself
-} // ! Ok 
+    $stmt  = ubuntuConnectionDB($generalInfoQuery);
+    $data = [];
+    while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+        $data[] = $row;
+    }
+    // // Check If Data length is 1 Then Return It Only 
+    // if (count($data) == 1) {
+    //     return $data[0];
+    // } // Could be More than One ? 
+    return $data[0]; // -> Object Of General Data 
+} // ? DONE 
 
 function getSingleInvoiceItemsData($docEntry)
 {
@@ -69,17 +77,21 @@ function getSingleInvoiceItemsData($docEntry)
     ON W0.WhsCode = T1.WhsCode
     WHERE T1.DocEntry IN (SELECT T0.DocEntry FROM TM.DBO.OINV T0 WHERE T0.CANCELED ='N') and 
     T1.DocEntry = " . $docEntry;
-    $invoiceItemsData = DB::connection('sqlsrv')->select($invoiceItemsQuery);
-    return $invoiceItemsData; // ! Data About Items themselves 
-} // ! Ok 
+    $data = [];
+    $stmt  = ubuntuConnectionDB($invoiceItemsQuery);
+    while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+        $data[] = $row;
+    }
+    return $data; // -> Array Of Objects 
+} // ? DONE 
 
 function getSingleInvoiceTotalData($docEntry)
 {
-    $invoiceGeneral  = getSingleInvoiceGeneralData($docEntry);
-    $invoiceItems  = getSingleInvoiceItemsData($docEntry);
+    $invoiceGeneralData  = getSingleInvoiceGeneralData($docEntry);
+    $invoiceItemsData  = getSingleInvoiceItemsData($docEntry);
     $totalInvoiceData  = [
-        'invoiceGeneralData' => $invoiceGeneral,
-        'invoiceItemsData' => $invoiceItems
+        'invoiceGeneralData' => $invoiceGeneralData,
+        'invoiceItemsData' => $invoiceItemsData
     ];
     return $totalInvoiceData;
 } // ! Ok 
@@ -140,6 +152,7 @@ function getInvoiceInDate($entriesAndDates, $specificDate)
     return $matchingEntries;
 } // ! Ok 
 
+
 function getInvoicesOfCurrentMonth($entriesAndDates)
 {
     $currentMonth = date('Y-m');
@@ -155,6 +168,18 @@ function getInvoicesOfCurrentMonth($entriesAndDates)
     return $currentMonthInvoices;
 } // ! Ok 
 
+// & http://127.0.0.1:8000/api/test/5
+Route::get('/test/{doc}', function (Request $request) {
+    $data  = getSingleInvoiceTotalData($request->doc);
+    return response()->json($data);
+});
+
+
+
+
+
+
+
 
 // http://127.0.0.1:8000/api/from/1/to/12
 Route::get('/from/{startMonth}/to/{endMonth}', function (Request $request) {
@@ -169,24 +194,10 @@ Route::get('/specific-date/{dateInput}', function (Request $request) {
 });
 
 
-// & http://127.0.0.1:8000/api/test
-Route::get('/test', function (Request $request) {
-    $resultOfDates = getAllCustomerInvoicesDates(getAllCustomerDocEntries("0553142429"));
-    $x = getInvoiceInDate($resultOfDates, "2018-12-02");
-    return response()->json([
-        'resultOfDates' => $resultOfDates,
-        'x' => $x
-    ]);
-});
 
 
 
-// http://10.10.10.66:8005/api/user-docs/0553142429
-Route::get('/user-docs/{phoneNumber}', function (Request $request) {
-    $inputPhoneNumber = $request->phoneNumber;
-    $userDocs  = getAllCustomerDocEntries($inputPhoneNumber);
-    return response()->json($userDocs);
-}); // * EndPoint Number 3 
+
 
 // http://10.10.10.66:8005/api/current-month/0553142429
 Route::get('/current-month/{phoneNumber}', function (Request $request) {
@@ -198,11 +209,39 @@ Route::get('/current-month/{phoneNumber}', function (Request $request) {
     ]);
 }); // * EndPoint Number 2 
 
-// http://10.10.10.66:8005/api/invoice/4504
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// http://10.10.10.66:8005/api/user-docs/0553142429
+Route::get('/user-docs/{phoneNumber}', function (Request $request) {
+    $inputPhoneNumber = $request->phoneNumber;
+    $userDocs  = getAllCustomerDocEntries($inputPhoneNumber);
+    return response()->json($userDocs);
+}); // * EndPoint DONE # 1 
+
+
+// http://10.10.10.66:8005/api/invoice/5
 Route::get('/invoice/{docEntry}', function (Request $request) {
     $invoiceNumber = $request->docEntry;
     $invoiceData  = getSingleInvoiceTotalData($invoiceNumber);
-    return response()->json([
-        'invoiceData' => $invoiceData
-    ]);
-}); // * EndPoint Number 1 
+    return response()->json($invoiceData);
+}); // * EndPoint DONE # 2  
