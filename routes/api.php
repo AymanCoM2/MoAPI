@@ -20,7 +20,7 @@ function ubuntuConnectionDB($inputQuery)
     ];
     $conn = new PDO("sqlsrv:server = $serverName; Database = $databaseName;", $uid, $pwd, $options);
     $stmt = $conn->query($inputQuery);
-    while ($row = $stmt->fetch(PDO::FETCH_CLASS)) {
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $data[] = $row; // Append each row to the $data array
     }
     return $data;
@@ -32,11 +32,11 @@ function getAllCustomerDocEntries($mobileNumber)
     $phoneQuery  = "SELECT * FROM MobileNumber WHERE [Mobile Number] = '" . $mobileNumber . "'";
     $result  = ubuntuConnectionDB($phoneQuery);
     // $phoneQueryResult  = DB::connection('sqlsrv')->select($phoneQuery);
-    $userDocEntries  = [];
-    foreach ($result as $key => $value) {
-        $userDocEntries[] = $value->DocEntry;
-    }
-    return $userDocEntries; // ^ All Invocies Numbers For this User  , It is ARRAY
+    // $userDocEntries  = [];
+    // foreach ($result as $key => $value) {
+    //     $userDocEntries[] = $value->DocEntry;
+    // }
+    return $result; // ^ All Invocies Numbers For this User  , It is ARRAY
 } // ! Ok 
 
 function getSingleInvoiceGeneralData($docEntry)
