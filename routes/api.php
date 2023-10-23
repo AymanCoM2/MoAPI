@@ -7,6 +7,24 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+function ubuntuConnectionDB($inputQuery)
+{
+    $serverName = "10.10.10.100";
+    $databaseName = "AljouaiT";
+    $uid = "ayman";
+    $pwd = "admin@1234";
+    $options = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::SQLSRV_ATTR_FETCHES_NUMERIC_TYPE => true,
+        "TrustServerCertificate" => true,
+    ];
+    $conn = new PDO("sqlsrv:server = $serverName; Database = $databaseName;", $uid, $pwd, $options);
+    $stmt = $conn->query($inputQuery);
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $data[] = $row; // Append each row to the $data array
+    }
+    return $data;
+}
 
 function getAllCustomerDocEntries($mobileNumber)
 {
