@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -93,7 +92,7 @@ function getAllCustomerInvoicesDates($docEntriesArray)
         $finalArrayOfInvoicesWithDates[$singleDocEntry] = $invoiceDates;
     }
     return $finalArrayOfInvoicesWithDates;
-}
+} // ! Ok 
 
 function getInvoicesInRange($entriesAndDates, $startDate, $endDate)
 {
@@ -128,32 +127,19 @@ function getInvoiceInDate($entriesAndDates, $specificDate)
 
 function getInvoicesOfCurrentMonth($entriesAndDates)
 {
-   
+    $currentMonth = date('Y-m');
+    $currentMonthInvoices = [];
+    foreach ($entriesAndDates as $invoiceNumber => $dates) {
+        $docDate = $dates['DocDate'];
+        $docMonth = date('Y-m', strtotime($docDate));
+        if ($docMonth === $currentMonth) {
+            // The invoice is from the current month
+            $currentMonthInvoices[$invoiceNumber] = $dates;
+        }
+    }
+    return $currentMonthInvoices;
+} // ! Ok 
 
-}
-
-function manipulateInvoicesDates($entriesAndDates)
-{
-    // $entriesAndDates Is an associative array 
-    // Each KEy is a Number Of Invoice 
-    //  Each Value is Array Of Two Keys : DocDate && DocDueDate in this Format format('Y-m-d')
-    // This is an Example Of the $entriesAndDates with Invoice Number 3 with its associated Dates 
-    /**
-     *  ["3" =>[
-     *    "DocDate" => 2018-01-09,
-     *    "DocDueDate" => 2018-01-09
-     * ]]
-     */
-    // 2-currentMonth 
-}
-
-
-// http://127.0.0.1:8000/api/current-month/0553142429/5
-Route::get('/current-month/{phoneNumber}/{monthNumber}', function (Request $request) {
-    // ? TODO : Should i Use Current Month As a Input Or no NEED for it ????
-    $inputPhoneNumber = $request->phoneNumber;
-    $inputMonthNumber = $request->monthNumber;
-});
 
 // http://127.0.0.1:8000/api/from/1/to/12
 Route::get('/from/{startMonth}/to/{endMonth}', function (Request $request) {
@@ -162,12 +148,7 @@ Route::get('/from/{startMonth}/to/{endMonth}', function (Request $request) {
     $end = $request->endMonth;
 });
 
-// http://127.0.0.1:8000/api/invoice/4504
-Route::get('/invoice/{docEntry}', function (Request $request) {
-    $invoiceNumber = $request->docEntry;
-});
-
-// http://127.0.0.1:8000/api/specific-date/121927
+// http://127.0.0.1:8000/api/specific-date/
 Route::get('/specific-date/{dateInput}', function (Request $request) {
     $neededDate = $request->dateInput;
 });
@@ -182,3 +163,34 @@ Route::get('/test', function (Request $request) {
         'x' => $x
     ]);
 });
+
+
+
+
+// http://10.10.10.66:8005/api/user-docs/0553142429
+Route::get('/user-docs/{phoneNumber}', function (Request $request) {
+    $inputPhoneNumber = $request->phoneNumber;
+    $userDocs  = getAllCustomerDocEntries($inputPhoneNumber);
+    return response()->json([
+        'userDocs' => $userDocs
+    ]);
+}); // * EndPoint Number 3 
+
+// http://10.10.10.66:8005/api/current-month/0553142429
+Route::get('/current-month/{phoneNumber}', function (Request $request) {
+    $inputPhoneNumber = $request->phoneNumber;
+    $userInvoicesDates  = getAllCustomerInvoicesDates(getAllCustomerDocEntries($inputPhoneNumber));
+    $currentMonthInvoices  = getInvoicesOfCurrentMonth($userInvoicesDates);
+    return response()->json([
+        'currentMonthInvoices' => $currentMonthInvoices
+    ]);
+}); // * EndPoint Number 2 
+
+// http://10.10.10.66:8005/api/invoice/4504
+Route::get('/invoice/{docEntry}', function (Request $request) {
+    $invoiceNumber = $request->docEntry;
+    $invoiceData  = getSingleInvoiceTotalData($invoiceNumber);
+    return response()->json([
+        'invoiceData' => $invoiceData
+    ]);
+}); // * EndPoint Number 1 
