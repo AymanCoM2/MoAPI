@@ -8,6 +8,13 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
+
+
+/**
+ * ^ In THE 
+ * ! Return Of the Doc Entries we Need also TO get the Dates For those DOCS 
+ * * Add this Tomorrow for the APIS endpoint for it  ; 
+ */
 function ubuntuConnectionDB($inputQuery)
 {
     $serverName = "10.10.10.100";
@@ -175,11 +182,6 @@ Route::get('/test/{doc}', function (Request $request) {
 
 
 
-
-
-
-
-
 // http://127.0.0.1:8000/api/from/1/to/12
 Route::get('/from/{startMonth}/to/{endMonth}', function (Request $request) {
     // ! Validation For the Range ? 
@@ -191,10 +193,6 @@ Route::get('/from/{startMonth}/to/{endMonth}', function (Request $request) {
 Route::get('/specific-date/{dateInput}', function (Request $request) {
     $neededDate = $request->dateInput;
 });
-
-
-
-
 
 
 
