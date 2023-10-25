@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Route;
 // });
 
 
-
 /**
  * ^ In THE 
  * ! Return Of the Doc Entries we Need also TO get the Dates For those DOCS 
@@ -63,7 +62,7 @@ function getSingleInvoiceGeneralData($docEntry)
     while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
         $data[] = $row;
     }
-    // // Check If Data length is 1 Then Return It Only 
+    //  Check If Data length is 1 Then Return It Only 
     // if (count($data) == 1) {
     //     return $data[0];
     // } // Could be More than One ? 
@@ -181,13 +180,13 @@ Route::get('/test/{doc}', function (Request $request) {
 });
 
 
-
 // http://127.0.0.1:8000/api/from/1/to/12
 Route::get('/from/{startMonth}/to/{endMonth}', function (Request $request) {
     // ! Validation For the Range ? 
     $start = $request->startMonth;
     $end = $request->endMonth;
 });
+
 
 // http://127.0.0.1:8000/api/specific-date/
 Route::get('/specific-date/{dateInput}', function (Request $request) {
@@ -216,3 +215,13 @@ Route::get('/current-month/{phoneNumber}', function (Request $request) {
     $currentMonthInvoices  = getInvoicesOfCurrentMonth($userInvoicesDates);
     return response()->json($currentMonthInvoices);
 }); // * EndPoint DONE # 3 
+
+
+// ! http://10.10.20.18:8000/api/get-data
+Route::get('/get-data', function (Request $request) {
+    $jsonData = $request->json()->all();
+    $name = $jsonData['name'];
+    return response()->json([
+        'result' => $name
+    ]);
+});
