@@ -158,7 +158,6 @@ function getInvoiceInDate($entriesAndDates, $specificDate)
     return $matchingEntries;
 } // ! Ok 
 
-
 function getInvoicesOfCurrentMonth($entriesAndDates)
 {
     $currentMonth = date('Y-m');
