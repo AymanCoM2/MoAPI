@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
-
 /**
  * ^ In THE 
  * ! Return Of the Doc Entries we Need also TO get the Dates For those DOCS 
@@ -113,6 +112,7 @@ function getAllCustomerDocEntriesWithData($docEntriesArray)
 
 function getAllCustomerInvoicesDates($docEntriesArray) // Internal Usage 
 {
+    // docEntriesArray Come From getAllCustomerDocEntries() ; 
     $finalArrayOfInvoicesWithDates = [];
     foreach ($docEntriesArray as $singleDocEntry) {
         $dDate = new DateTime(getSingleInvoiceGeneralData($singleDocEntry)->DocDate);
@@ -128,6 +128,7 @@ function getAllCustomerInvoicesDates($docEntriesArray) // Internal Usage
 
 function getInvoicesInRange($entriesAndDates, $startDate, $endDate)
 {
+    // entriesAndDates Are Coming From this Function getAllCustomerInvoicesDates()
     $filteredInvoices = [];
     $startDateObj = new DateTime($startDate);
     $endDateObj = new DateTime($endDate);
@@ -179,7 +180,6 @@ Route::get('/test/{doc}', function (Request $request) {
     return response()->json($data);
 });
 
-
 // http://127.0.0.1:8000/api/from/1/to/12
 Route::get('/from/{startMonth}/to/{endMonth}', function (Request $request) {
     // ! Validation For the Range ? 
@@ -187,12 +187,10 @@ Route::get('/from/{startMonth}/to/{endMonth}', function (Request $request) {
     $end = $request->endMonth;
 });
 
-
 // http://127.0.0.1:8000/api/specific-date/
 Route::get('/specific-date/{dateInput}', function (Request $request) {
     $neededDate = $request->dateInput;
 });
-
 
 // http://10.10.10.66:8005/api/user-docs/0553142429
 Route::get('/user-docs/{phoneNumber}', function (Request $request) {
@@ -217,11 +215,19 @@ Route::get('/current-month/{phoneNumber}', function (Request $request) {
 }); // * EndPoint DONE # 3 
 
 
-// ! http://10.10.20.18:8000/api/get-data
-Route::get('/get-data', function (Request $request) {
+// ! http://10.10.20.18:8000/api/get-invoices-within-range
+Route::post('/get-invoices-within-range', function (Request $request) {
     $jsonData = $request->json()->all();
-    $name = $jsonData['name'];
-    return response()->json([
-        'result' => $name
-    ]);
+    $start = $jsonData['startdate'];
+    $phone = $jsonData['phone'];
+    $end = $jsonData['enddate'];
+    if (isset($end)) {
+        $end  = $jsonData['enddate'];
+    } else {
+        $end = date("Y-m-d");
+    }
+    $userDocEntries  = getAllCustomerDocEntries($phone);
+    $entriesAndDates = getAllCustomerInvoicesDates($userDocEntries);
+    $result  = getInvoicesInRange($entriesAndDates, $start, $end);
+    return response()->json($result);
 });
