@@ -1,0 +1,6 @@
+1- Throttling for the API request 
+2- Closing Conenction After response ? 
+3- Multiple requests ? How to Handle it  ? PERFORMANCE 
+4- Documentation ..something like this "Swagger" ? 
+    - Naming COncentions and All standard Thing ! 
+5- 

@@ -39,6 +39,23 @@ function getAllCustomerDocEntries($mobileNumber)
     }
     return $data;
 } // ? DONE 
+function phoneNumber($docEntry = "30044028")
+{
+    $phoneQuery  = "SELECT * FROM [@MobileNumber] WHERE DocEntry = '" . $docEntry . "'";
+    $stmt  = ubuntuConnectionDB($phoneQuery);
+    $data  = [];
+    while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+        $data[] = $row;
+        // $data[] = $row->DocEntry;
+    }
+    return $data;
+} // ? DONE 
+
+Route::get('/koko', function (Request $request) {
+    $res = phoneNumber();
+    return response()->json($res);
+});
+
 
 function getSingleInvoiceGeneralData($docEntry)
 {
@@ -168,28 +185,12 @@ function getInvoicesOfCurrentMonth($entriesAndDates)
         if ($docMonth === $currentMonth) {
             // The invoice is from the current month
             $currentMonthInvoices[$invoiceNumber] = $dates;
+            // + TOTAL && Number Of items 
         }
     }
     return $currentMonthInvoices;
 } // ? DONE 
 
-// & http://127.0.0.1:8000/api/test/5
-Route::get('/test/{doc}', function (Request $request) {
-    $data  = getSingleInvoiceTotalData($request->doc);
-    return response()->json($data);
-});
-
-// http://127.0.0.1:8000/api/from/1/to/12
-Route::get('/from/{startMonth}/to/{endMonth}', function (Request $request) {
-    // ! Validation For the Range ? 
-    $start = $request->startMonth;
-    $end = $request->endMonth;
-});
-
-// http://127.0.0.1:8000/api/specific-date/
-Route::get('/specific-date/{dateInput}', function (Request $request) {
-    $neededDate = $request->dateInput;
-});
 
 // http://10.10.10.66:8005/api/user-docs/0553142429
 Route::get('/user-docs/{phoneNumber}', function (Request $request) {
@@ -228,5 +229,38 @@ Route::post('/get-invoices-within-range', function (Request $request) {
     $userDocEntries  = getAllCustomerDocEntries($phone);
     $entriesAndDates = getAllCustomerInvoicesDates($userDocEntries);
     $result  = getInvoicesInRange($entriesAndDates, $start, $end);
-    return response()->json($result);
+    return response()->json([$result]);
+}); // * EndPoint DONE # 4 
+
+
+// http://127.0.0.1:8000/api/specific-date/
+Route::post('/specific-date', function (Request $request) {
+    $jsonData = $request->json()->all();
+    // {
+    //     "date" : "2020-03-10" , 
+    //     "phone" : "0553142429"
+    // }
+    // ----------------------- Response 
+    // {
+    //     "121927": {
+    //         "DocDate": "2020-03-10",
+    //         "DocDueDate": "2020-03-10"
+    //     }
+    // }
+    $specificDate  = $jsonData['date'];
+    $userPhone  = $jsonData['phone'];
+    $userDocEntries  = getAllCustomerDocEntries($userPhone);
+    $entriesAndDates = getAllCustomerInvoicesDates($userDocEntries);
+    $result = getInvoiceInDate($entriesAndDates, $specificDate);
+    return response()->json([$result]);
+});
+
+
+
+Route::post('/check-difference', function (Request $request) {
+    // ! Get the Phone Number First S you Can Compare them 
+    $jsonData = $request->json()->all();
+    $docsArray = $jsonData['docs'];
+    $userPhone = $jsonData['phone'];
+    return response()->json($docsArray);
 });
