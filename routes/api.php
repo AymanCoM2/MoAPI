@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 /**
  * ^ In THE 
  * ! Return Of the Doc Entries we Need also TO get the Dates For those DOCS 
- * * Add this Tomorrow for the APIS endpoint for it  ; 
+ * * Add this Tomorrow for the APIS endpoint for it 
  */
 function ubuntuConnectionDB($inputQuery)
 {
@@ -263,4 +263,21 @@ Route::post('/check-difference', function (Request $request) {
     $docsArray = $jsonData['docs'];
     $userPhone = $jsonData['phone'];
     return response()->json($docsArray);
+});
+
+
+Route::post('/verify', function (Request $request) {
+    // Get in Json Data : Phone Number && An Invoice Number 
+    $jsonData = $request->json()->all();
+    $userPhone = $jsonData['phone'];
+    $userInvoice  = $jsonData['invoice'];
+    // ! 1 - Get all Invoices using Phone Number 
+    // ? 2 - Compare the Invoice with the Array  ; 
+    // ^ If Yes Then Send the Reset Password and Make it With "Mobile" Not mail 
+    $entriesArray  = getAllCustomerDocEntries($userPhone);
+    if (in_array($userInvoice, $entriesArray)) {
+        return response()->json("True");
+    } else {
+        return response()->json("False");
+    }
 });
