@@ -188,4 +188,28 @@ class AlJouaiRequests
         }
         return $currentMonthInvoices;
     }
+
+    public static function getTotalOfInvoice($docEntry)
+    {
+        $res  = self::getSingleInvoiceGeneralData($docEntry);
+        return $res->DocTotal;
+    }
+
+    public static function  getNumberOfItemsInvoice($docEntry)
+    {
+        $res = self::getSingleInvoiceItemsData($docEntry);
+        return count($res);
+    }
+
+    public static function getInvoiceDatesOnly($docEntry)
+    {
+        $res = self::getSingleInvoiceGeneralData($docEntry);
+        $ddate = new DateTime($res->DocDate);
+        $dddate =  new DateTime($res->DocDueDate);
+        return [
+            'DocDate' => $ddate->format('Y-m-d'),
+            'DocDueDate' =>  $dddate->format('Y-m-d')
+            // 1310,5
+        ];
+    }
 }

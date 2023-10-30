@@ -34,3 +34,9 @@ http://10.10.20.18:8000/api/
     }
 
 ========================================
+========================================
+
+1- [GET] To get the Invoices Of Current Month using phone number: 
+    http://10.10.20.18:8000/api/current-month/0535575165
+
+
