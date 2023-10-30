@@ -78,32 +78,18 @@ Route::get('/current-month/{phoneNumber}', function (Request $request) {
     $userEntries  = AlJouaiRequests::getAllCustomerDocEntries($inputPhoneNumber);
     $userInvoicesDates  = AlJouaiRequests::getAllCustomerInvoicesDates($userEntries);
     $currentMonthInvoices  = AlJouaiRequests::getInvoicesOfCurrentMonth($userInvoicesDates);
-    // return response()->json($currentMonthInvoices);
     $otherArray  = [];
-    // $jsonData = json_decode($data, true);
     foreach ($currentMonthInvoices as $key => $value) {
         $newKey  = $value['DocDate'];
         if (isset($otherArray[$newKey])) {
-            // Get tht old orray Of this Eky and Append the Next value 
             $otherArray[$newKey][] = $key;
         } else {
             $kwys = [];
             $kwys[] = $key;
-            $otherArray[$newKey]  = $kwys; // Initialize array with First Element 
+            $otherArray[$newKey]  = $kwys;
         }
-    }
-    // ! TODO looping over the aaray now  ?
-    /**
-     * 1- Sort by the keys 
-     * 2- Key By Get Get the array elements 
-     * 3- Replace the DocEntry With Docentry Refering to the array Of Data 
-     * 
-     */
-
-    // Convert the Data to list 
-    // and Remove the Data 0 and 1 into something else 
-    // Else For this To Convert this Date Of it ; 
-    // Insert 
+    } // 
+    ksort($otherArray);
     $newArrayForDate = [];
     $newContainer = [];
     foreach ($otherArray as $date => $arrOfEntries) {
@@ -121,8 +107,8 @@ Route::get('/current-month/{phoneNumber}', function (Request $request) {
             }
         }
     }
-    return response()->json([$newContainer]);
-}); // * EndPoint DONE # 3 
+    return response()->json($newContainer); // Data is Now Sorted 
+}); // * EndPoint#3 
 
 
 

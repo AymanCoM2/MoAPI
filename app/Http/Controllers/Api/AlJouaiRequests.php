@@ -209,7 +209,6 @@ class AlJouaiRequests
         return [
             'DocDate' => $ddate->format('Y-m-d'),
             'DocDueDate' =>  $dddate->format('Y-m-d')
-            // 1310,5
         ];
     }
 }
