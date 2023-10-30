@@ -1,0 +1,36 @@
+http://10.10.20.18:8000/api/
+
+========================================
+
+1- [GET] To get the Array Of the User DocEntries Using the phone number : 
+    http://10.10.20.18:8000/api/user-docs/0553142429
+    http://10.10.20.18:8000/api/user-docs/0535575165
+
+2- [GET] To get the Data Of a Certain Invoice Using DocEntry 
+    http://10.10.20.18:8000/api/invoice/114044
+    http://10.10.20.18:8000/api/invoice/121927
+
+========================================
+========================================
+
+1- [POST] To get the Invoices Within a Certain Period Of Time : 
+    http://10.10.20.18:8000/api/get-invoices-within-range
+
+    JSON BODY : 
+    {
+        "startdate" : "2010-01-01" , 
+        "enddate" : "2024-12-12" , [CAN BE NULL] 
+        "phone" : "0553142429"
+    }
+
+
+2- [POST] To get the Data Of Invoices In a Certain Date 
+    http://10.10.20.18:8000/api/specific-date
+
+    JSON BODY : 
+    {
+        "date" : "2020-03-10" , 
+        "phone" : "0553142429"
+    }
+
+========================================

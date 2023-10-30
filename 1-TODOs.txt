@@ -5,4 +5,7 @@
     - Naming COncentions and All standard Thing ! 
 5- How To seperate API files ? 
 6- Conventions / Resource Classes ? 
-7- 
+7- Authentication For the User And Sending HTML page Response to the User  ; 
+
+8- Handling Errors and Typos ?
+
