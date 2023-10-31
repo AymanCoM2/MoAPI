@@ -111,7 +111,6 @@ Route::get('/current-month/{phoneNumber}', function (Request $request) {
 }); // * EndPoint#3 
 
 
-
 Route::post('/verify', function (Request $request) {
     // Get in Json Data : Phone Number && An Invoice Number 
     $jsonData = $request->json()->all();
