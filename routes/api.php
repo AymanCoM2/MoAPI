@@ -72,7 +72,6 @@ Route::get('/koko', function (Request $request) {
 Route::group([], __DIR__ . '/apiOne.php'); // * Ok 
 Route::group([], __DIR__ . '/apiTwo.php'); // ! WORKING On 
 
-// http://10.10.10.66:8005/api/current-month/
 Route::get('/current-month/{phoneNumber}', function (Request $request) {
     $inputPhoneNumber = $request->phoneNumber;
     $userEntries  = AlJouaiRequests::getAllCustomerDocEntries($inputPhoneNumber);
@@ -88,7 +87,7 @@ Route::get('/current-month/{phoneNumber}', function (Request $request) {
             $kwys[] = $key;
             $otherArray[$newKey]  = $kwys;
         }
-    } // 
+    }
     ksort($otherArray);
     $newArrayForDate = [];
     $newContainer = [];
