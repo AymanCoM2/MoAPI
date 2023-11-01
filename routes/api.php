@@ -5,10 +5,6 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
-
-
 Route::group([], __DIR__ . '/apiOne.php'); // * Ok 
 Route::group([], __DIR__ . '/apiTwo.php'); // ! WORKING On 
 Route::group([], __DIR__ . '/apiThree.php'); // ! WORKING On 
-
-
