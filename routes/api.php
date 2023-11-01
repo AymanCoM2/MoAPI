@@ -32,8 +32,8 @@ Route::post('/api/login', function (Request $request) {
     if (Auth::attempt(['phone' => $userPhone, 'password' => $userPass])) {
         $user = Auth::user();
         // $token = $user->createToken('MyAppToken')->plainTextToken;
-
         return response()->json(['access_token' => "TOken234534"]);
     }
     return response()->json(['error' => 'Invalid credentials'], 401);
 });
+
