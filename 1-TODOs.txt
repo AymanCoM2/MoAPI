@@ -1,11 +1,5 @@
-1- Throttling for the API request 
-2- Closing Conenction After response ? 
-3- Multiple requests ? How to Handle it  ? PERFORMANCE 
-4- Documentation ..something like this "Swagger" ? 
-    - Naming COncentions and All standard Thing ! 
-5- How To seperate API files ? 
-6- Conventions / Resource Classes ? 
-7- Authentication For the User And Sending HTML page Response to the User  ; 
+7 - Authentication For the User And Sending HTML page Response to the User  ; 
+8 - Handling Errors and Typos
+10 - Writing log for the APIs That were reuqested From Client
 
-8- Handling Errors and Typos ?
-
+PERFORMANCE

@@ -83,6 +83,23 @@ class AlJouaiRequests
         return $data[0]; // -> Object Of General Data 
     }
 
+    public static function getInvoiceDocTotal($docEntry)
+    {
+        $generalInfoQuery = "
+    SELECT T0.DocTotal
+    FROM AljouaiT.DBO.OINV T0
+    LEFT JOIN AljouaiT.DBO.NNM1 N1 ON N1.Series = T0.Series
+    LEFT JOIN  AljouaiT.DBO.OUSR T00 ON T0.USERSIGN = T00.INTERNAL_K
+    WHERE 
+    T0.CANCELED ='N' and T0.DocEntry = " . $docEntry;
+        $stmt  = self::establishConnectionDB($generalInfoQuery);
+        $data = [];
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+            $data[] = $row;
+        }
+        return $data[0]->DocTotal;
+    }
+
     public static function getSingleInvoiceItemsData($docEntry)
     {
         $invoiceItemsQuery = "
@@ -103,6 +120,27 @@ class AlJouaiRequests
             $data[] = $row;
         }
         return $data; // -> Array Of Objects 
+    }
+
+    public static function getCountOfNumbers($docEntry)
+    {
+        $invoiceItemsQuery = "
+    SELECT
+    T1.DocEntry , count(T1.ItemCode) as Totalz
+    FROM 
+    (TM.DBO.OINV T0 inner join TM.DBO.INV1 T1 on T1.DocEntry= T0.DocEntry)
+    WHERE T1.DocEntry = " . $docEntry . "
+    GROUP BY T1.DocEntry ";
+        $data = [];
+        $stmt  = self::establishConnectionDB($invoiceItemsQuery);
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+            $data[] = $row;
+        }
+        if ($data) {
+            return $data[0]->Totalz;
+        } else {
+            return 0;
+        }
     }
 
     public static function  getSingleInvoiceTotalData($docEntry)

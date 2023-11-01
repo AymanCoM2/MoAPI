@@ -51,21 +51,24 @@ Route::get('/koko', function (Request $request) {
             "DocDueDate": "2024-12-12"
         }
     }';
-    $otherArray  = [];
-    $jsonData = json_decode($data, true);
-    foreach ($jsonData as $key => $value) {
-        $newKey  = $value['DocDate'];
-        if (isset($otherArray[$newKey])) {
-            // Get tht old orray Of this Eky and Append the Next value 
-            $otherArray[$newKey][] = $key;
-        } else {
-            $kwys = [];
-            $kwys[] = $key;
-            $otherArray[$newKey]  = $kwys; // Initialize array with First Element 
+    // $otherArray  = [];
+    // $jsonData = json_decode($data, true);
+    // foreach ($jsonData as $key => $value) {
+    //     $newKey  = $value['DocDate'];
+    //     if (isset($otherArray[$newKey])) {
+    //         // Get tht old orray Of this Eky and Append the Next value 
+    //         $otherArray[$newKey][] = $key;
+    //     } else {
+    //         $kwys = [];
+    //         $kwys[] = $key;
+    //         $otherArray[$newKey]  = $kwys; // Initialize array with First Element 
 
-        }
-    }
-    return response()->json($otherArray);
+    //     }
+    // }
+    // return response()->json($otherArray);
+    // $num = AlJouaiRequests::getCountOfNumbers("4504"); // 1 item 
+    $num = AlJouaiRequests::getInvoiceDocTotal("353829"); // 438
+    return response()->json($num);
 });
 
 
@@ -94,8 +97,8 @@ Route::get('/current-month/{phoneNumber}', function (Request $request) {
     foreach ($otherArray as $date => $arrOfEntries) {
         foreach ($arrOfEntries as $index => $docEntry) {
             $newArrayForDate[$docEntry] = [
-                'Total' => AlJouaiRequests::getTotalOfInvoice($docEntry),
-                'NumberOfItems' => AlJouaiRequests::getNumberOfItemsInvoice($docEntry),
+                'Total' => AlJouaiRequests::getInvoiceDocTotal($docEntry),
+                'NumberOfItems' => AlJouaiRequests::getCountOfNumbers($docEntry),
                 'Dates' => AlJouaiRequests::getInvoiceDatesOnly($docEntry),
             ];
             if (isset($newContainer[$date])) {
@@ -112,22 +115,30 @@ Route::get('/current-month/{phoneNumber}', function (Request $request) {
 
 Route::post('/verify', function (Request $request) {
     // Get in Json Data : Phone Number && An Invoice Number 
-    $jsonData = $request->json()->all();
-    $userPhone = $jsonData['phone'];
-    $userInvoice  = $jsonData['invoice'];
-    $userInvoice = (string) $userInvoice;
-    // ! 1 - Get all Invoices using Phone Number 
-    // ? 2 - Compare the Invoice with the Array  ; 
-    // ^ If Yes Then Send the Reset Password and Make it With "Mobile" Not mail 
-    $entriesArray  = AlJouaiRequests::getAllCustomerDocEntries($userPhone);
+    // $jsonData = $request->json()->all();
+    // $userPhone = $jsonData['phone'];
+    // $userInvoice  = $jsonData['invoice'];
+    // $userInvoice = (string) $userInvoice;
+    // // ! 1 - Get all Invoices using Phone Number 
+    // // ? 2 - Compare the Invoice with the Array  ; 
+    // // ^ If Yes Then Send the Reset Password and Make it With "Mobile" Not mail 
+    // $entriesArray  = AlJouaiRequests::getAllCustomerDocEntries($userPhone);
 
-    if (in_array($userInvoice, $entriesArray)) {
-        return response()->json([
-            "res" => 1
-        ]);
-    } else {
-        return response()->json([
-            "res" => 0
-        ]);
-    }
+    // if (in_array($userInvoice, $entriesArray)) {
+    //     return response()->json([
+    //         "res" => 1
+    //     ]);
+    // } else {
+    //     return response()->json([
+    //         "res" => 0
+    //     ]);
+    // }
+    $data  = '{
+        "res": 1
+    }';
+    $jData = json_decode($data, true);
+    sleep(3);
+    return response()->json($jData);
 });
+
+
