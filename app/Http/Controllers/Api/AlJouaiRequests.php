@@ -8,11 +8,6 @@ use PDO;
 
 class AlJouaiRequests
 {
-    /**
-     * Summary of establishConnectionDB
-     * @param mixed $inputQuery
-     * @return \PDOStatement|bool
-     */
     public static function establishConnectionDB($inputQuery)
     {
         $serverName = "10.10.10.100";
@@ -28,15 +23,8 @@ class AlJouaiRequests
         return $stmt;
     }
 
-    /**
-     * Summary of getAllCustomerDocEntries
-     * @param mixed $mobileNumber
-     * @return array
-     */
     public static function getAllCustomerDocEntries($mobileNumber)
     {
-        //* MobileNumber is a View The Has Phone Number and the DocEntry For this User 
-        //* Row is Object Because of 'PDO::FETCH_OBJ' , $data is Array 
         $phoneQuery  = "SELECT * FROM MobileNumber WHERE [Mobile Number] = '" . $mobileNumber . "'";
         $stmt  = self::establishConnectionDB($phoneQuery);
         $data  = [];
@@ -51,7 +39,6 @@ class AlJouaiRequests
         $phoneQuery  = "SELECT Phone FROM [@MobileNumber] WHERE DocEntry = '" . $docEntry . "'";
         $stmt  = self::establishConnectionDB($phoneQuery);
         $phone = $stmt->fetch(PDO::FETCH_OBJ);
-        // return $phone;
         return $phone->Phone;
     }
 
@@ -76,10 +63,6 @@ class AlJouaiRequests
         while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
             $data[] = $row;
         }
-        //  Check If Data length is 1 Then Return It Only 
-        // if (count($data) == 1) {
-        //     return $data[0];
-        // } // Could be More than One ? 
         return $data[0]; // -> Object Of General Data 
     }
 
@@ -143,7 +126,7 @@ class AlJouaiRequests
         }
     }
 
-    public static function  getSingleInvoiceTotalData($docEntry)
+    public static function getSingleInvoiceTotalData($docEntry)
     {
         $invoiceGeneralData  = self::getSingleInvoiceGeneralData($docEntry);
         $invoiceItemsData  = self::getSingleInvoiceItemsData($docEntry);
@@ -154,7 +137,7 @@ class AlJouaiRequests
         return $totalInvoiceData;
     }
 
-    public static  function getAllCustomerDocEntriesWithData($docEntriesArray)
+    public static function getAllCustomerDocEntriesWithData($docEntriesArray)
     {
         $finalArrayOfAllInvoicesWithData  = [];
         foreach ($docEntriesArray as $singleDocEntry) {
@@ -165,7 +148,6 @@ class AlJouaiRequests
 
     public static function getAllCustomerInvoicesDates($docEntriesArray) // Internal Usage 
     {
-        // docEntriesArray Come From getAllCustomerDocEntries() ; 
         $finalArrayOfInvoicesWithDates = [];
         foreach ($docEntriesArray as $singleDocEntry) {
             $dDate = new DateTime(self::getSingleInvoiceGeneralData($singleDocEntry)->DocDate);
@@ -181,7 +163,6 @@ class AlJouaiRequests
 
     public static function getInvoicesInRange($entriesAndDates, $startDate, $endDate)
     {
-        // entriesAndDates Are Coming From this Function getAllCustomerInvoicesDates()
         $filteredInvoices = [];
         $startDateObj = new DateTime($startDate);
         $endDateObj = new DateTime($endDate);
@@ -197,13 +178,9 @@ class AlJouaiRequests
     public static function getInvoiceInDate($entriesAndDates, $specificDate)
     {
         $matchingEntries = array();
-        // Iterate through each entry in $entriesAndDates
         foreach ($entriesAndDates as $invoiceNumber => $entry) {
-            // Check if the entry has both "DocDate" and "DocDueDate" keys
             if (isset($entry["DocDate"]) && isset($entry["DocDueDate"])) {
-                // Compare the "DocDate" to the $specificDate
                 if ($entry["DocDate"] === $specificDate) {
-                    // If it matches, add it to the $matchingEntries array
                     $matchingEntries[$invoiceNumber] = $entry;
                 }
             }
@@ -213,15 +190,15 @@ class AlJouaiRequests
 
     public static function getInvoicesOfCurrentMonth($entriesAndDates)
     {
-        $currentMonth = date('Y-m');
+        // $currentMonth = date('Y-m');
+        // ! TODO this is the HardCoded For October Month For Now 
+        $currentMonth = '2023-10';
         $currentMonthInvoices = [];
         foreach ($entriesAndDates as $invoiceNumber => $dates) {
             $docDate = $dates['DocDate'];
             $docMonth = date('Y-m', strtotime($docDate));
             if ($docMonth === $currentMonth) {
-                // The invoice is from the current month
                 $currentMonthInvoices[$invoiceNumber] = $dates;
-                // + TOTAL && Number Of items 
             }
         }
         return $currentMonthInvoices;

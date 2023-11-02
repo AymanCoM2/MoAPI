@@ -1,10 +1,11 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Hash;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
@@ -14,8 +15,7 @@ Route::group([], __DIR__ . '/apiTwo.php'); // ! WORKING On
 Route::group([], __DIR__ . '/apiThree.php'); // ! WORKING On 
 
 
-Route::post('/api/login', function (Request $request) {
-    // Validate the incoming request data
+Route::post('/login', function (Request $request) {
     $jsonData = $request->json()->all();
     $userPhone = $jsonData['phone'];
     $userPass = $jsonData['password'];
@@ -32,8 +32,24 @@ Route::post('/api/login', function (Request $request) {
     if (Auth::attempt(['phone' => $userPhone, 'password' => $userPass])) {
         $user = Auth::user();
         // $token = $user->createToken('MyAppToken')->plainTextToken;
-        return response()->json(['access_token' => "TOken234534"]);
+        return response()->json(1);
     }
-    return response()->json(['error' => 'Invalid credentials'], 401);
+    return response()->json(0, 200);
 });
 
+
+Route::post('/register-user', function (Request $request) {
+    $jsonData = $request->json()->all();
+    $userPass = $jsonData['password'];
+    $userPhone = $jsonData['phone'];
+    $existUser  = User::where('phone', $userPhone)->first();
+    if ($existUser) {
+        return response()->json(0);
+    } else {
+        $registeredUser  = new User();
+        $registeredUser->phone = $userPhone;
+        $registeredUser->password = Hash::make($userPass);
+        $registeredUser->save();
+        return response()->json(1);
+    }
+});
