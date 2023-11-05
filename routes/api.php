@@ -11,8 +11,9 @@ use Illuminate\Support\Facades\Hash;
 // });
 
 Route::group([], __DIR__ . '/apiOne.php'); // * Ok 
-Route::group([], __DIR__ . '/apiTwo.php'); // ! WORKING On 
-Route::group([], __DIR__ . '/apiThree.php'); // ! WORKING On 
+Route::group([], __DIR__ . '/apiTwo.php'); // * ok
+Route::group([], __DIR__ . '/apiThree.php'); // * ok
+Route::group([], __DIR__ . '/apiFour.php'); // ! WORKING On 
 
 
 Route::post('/login', function (Request $request) {

@@ -15,4 +15,10 @@ Route::get('/invoice/{docEntry}', function (Request $request) {
     $invoiceNumber = $request->docEntry;
     $invoiceData  = AlJouaiRequests::getSingleInvoiceTotalData($invoiceNumber);
     return response()->json($invoiceData);
+    // 
 }); // * EndPoint#2 
+
+
+Route::get('/anime-is-Cartoon', function (Request $request) {
+    return response()->json("Anime Is Cartoon");
+});
