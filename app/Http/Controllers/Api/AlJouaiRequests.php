@@ -175,6 +175,20 @@ class AlJouaiRequests
         return $filteredInvoices;
     }
 
+    public static function getInvoiceEntriesONLYInRange($entriesAndDates, $startDate, $endDate)
+    {
+        $filteredInvoices = [];
+        $startDateObj = new DateTime($startDate);
+        $endDateObj = new DateTime($endDate);
+        foreach ($entriesAndDates as $invoiceNumber => $dates) {
+            $docDateObj = new DateTime($dates['DocDate']);
+            if ($docDateObj >= $startDateObj && $docDateObj <= $endDateObj) {
+                $filteredInvoices[] = $invoiceNumber;
+            }
+        }
+        return $filteredInvoices;
+    }
+
     public static function getInvoiceInDate($entriesAndDates, $specificDate)
     {
         $matchingEntries = array();
@@ -182,6 +196,19 @@ class AlJouaiRequests
             if (isset($entry["DocDate"]) && isset($entry["DocDueDate"])) {
                 if ($entry["DocDate"] === $specificDate) {
                     $matchingEntries[$invoiceNumber] = $entry;
+                }
+            }
+        }
+        return $matchingEntries;
+    }
+
+    public static function getInvoicesInDateEntryONLY($entriesAndDates, $specificDate)
+    {
+        $matchingEntries = array();
+        foreach ($entriesAndDates as $invoiceNumber => $entry) {
+            if (isset($entry["DocDate"]) && isset($entry["DocDueDate"])) {
+                if ($entry["DocDate"] === $specificDate) {
+                    $matchingEntries[] = $invoiceNumber;
                 }
             }
         }
