@@ -1,5 +1,0 @@
-7 - Authentication For the User And Sending HTML page Response to the User  ; 
-8 - Handling Errors and Typos
-10 - Writing log for the APIs That were reuqested From Client
-
-PERFORMANCE
