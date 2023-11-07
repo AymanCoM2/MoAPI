@@ -40,15 +40,13 @@ Route::get('/f/last-five/{phoneNumber}', function (Request $request) {
     $last5 = array_slice($reversed, 0, 5);
     $result = [];
 
-    foreach ($last5 as $key => $value) {
+    foreach ($last5 as $value) {
         $result[] = desiredFormat($value);
     }
 
     $objectOfObjects = [];
-    foreach ($result as $item) {
-        $key = key($item);
-        $value = current($item);
-        $objectOfObjects[$key] = $value;
+    foreach ($result as $key => $item) {
+        $objectOfObjects[$key] = $item;
     }
     return response()->json($objectOfObjects);
 }); // * DONE 
