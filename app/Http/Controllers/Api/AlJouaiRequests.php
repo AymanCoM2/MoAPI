@@ -23,6 +23,17 @@ class AlJouaiRequests
         return $stmt;
     }
 
+
+    public static function getQrCode($docEntry)
+    {
+        $query  = "SELECT HeX AS 'DT'  FROM [@QRTV] WHERE DocEntry  =" . $docEntry;
+        $stmt = self::establishConnectionDB($query);
+        $qr  = null;
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+            $qr =  (string) $row->DT;
+        }
+        return $qr;
+    }
     public static function getAllCustomerDocEntries($mobileNumber)
     {
         $phoneQuery  = "SELECT * FROM MobileNumber WHERE [Mobile Number] = '" . $mobileNumber . "'";
@@ -60,10 +71,15 @@ class AlJouaiRequests
     T0.CANCELED ='N' and T0.DocEntry = " . $docEntry;
         $stmt  = self::establishConnectionDB($generalInfoQuery);
         $data = [];
+
         while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
             $data[] = $row;
         }
-        return $data[0]; // -> Object Of General Data 
+        $oop  = new \stdClass();
+        $oop = $data[0];
+        $oop->qr =  $qr  =  AlJouaiRequests::getQrCode($docEntry);
+        // return $data[0]; // -> Object Of General Data 
+        return $oop;
     }
 
     public static function getInvoiceDocTotal($docEntry)

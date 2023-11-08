@@ -153,6 +153,7 @@ Route::post('/f/specific-date', function (Request $request) {
             $otherArray[$newKey]  = $kwys;
         }
     }
+
     ksort($otherArray);
     $newArrayForDate = [];
     $newContainer = [];
@@ -172,4 +173,25 @@ Route::post('/f/specific-date', function (Request $request) {
         }
     }
     return response()->json($newContainer); // Data is Now Sorted 
+}); // * DONE 
+
+
+
+Route::get('/qr/{docEntry}', function (Request $request) {
+    $entry  = $request->docEntry;
+    $qr  =  AlJouaiRequests::getQrCode($entry);
+    return response()->json($qr);
+}); // * DONE 
+
+
+
+Route::get('/toto/{docEntry}', function (Request $request) {
+    $entry  = $request->docEntry;
+    $total  =  AlJouaiRequests::getNumberOfItemsInvoice($entry);
+    $total2  =  AlJouaiRequests::getCountOfNumbers($entry);
+
+    return response()->json([
+        'total_1' => $total,
+        'total_2' => $total2
+    ]);
 }); // * DONE 
