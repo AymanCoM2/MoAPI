@@ -33,22 +33,43 @@ Route::get('/f/invoice/{docEntry}', function (Request $request) {
 
 // http://10.10.20.11:8000/api/f/last-five/0535575165
 Route::get('/f/last-five/{phoneNumber}', function (Request $request) {
+    // Standatd MOAPI 
     $inputPhoneNumber = $request->phoneNumber;
-    $userDocs  = AlJouaiRequests::getAllCustomerDocEntries($inputPhoneNumber);
-    natsort($userDocs);
-    $reversed = array_reverse($userDocs);
-    $last5 = array_slice($reversed, 0, 5);
-    $result = [];
-
-    foreach ($last5 as $value) {
-        $result[] = desiredFormat($value);
+    $userEntries  = AlJouaiRequests::getAllCustomerDocEntries($inputPhoneNumber);
+    natsort($userEntries);
+    $reversed  = array_reverse($userEntries);
+    $lastFiveArray  = array_slice($reversed, 0, 5);
+    $userInvoicesDates  = AlJouaiRequests::getAllCustomerInvoicesDates($lastFiveArray);
+    $otherArray  = [];
+    foreach ($userInvoicesDates as $key => $value) {
+        $newKey  = $value['DocDate'];
+        if (isset($otherArray[$newKey])) {
+            $otherArray[$newKey][] = $key;
+        } else {
+            $kwys = [];
+            $kwys[] = $key;
+            $otherArray[$newKey]  = $kwys;
+        }
     }
-
-    $objectOfObjects = [];
-    foreach ($result as $key => $item) {
-        $objectOfObjects[$key] = $item;
+    ksort($otherArray);
+    $newArrayForDate = [];
+    $newContainer = [];
+    foreach ($otherArray as $date => $arrOfEntries) {
+        foreach ($arrOfEntries as $index => $docEntry) {
+            $newArrayForDate[$docEntry] = [
+                'Total' => AlJouaiRequests::getInvoiceDocTotal($docEntry),
+                'NumberOfItems' => AlJouaiRequests::getCountOfNumbers($docEntry),
+                'Dates' => AlJouaiRequests::getInvoiceDatesOnly($docEntry),
+            ];
+            if (isset($newContainer[$date])) {
+                $newContainer[$date][$docEntry][] = $newArrayForDate[$docEntry];
+            } else {
+                $newContainer[$date] = [];
+                $newContainer[$date][$docEntry][] = $newArrayForDate[$docEntry];
+            }
+        }
     }
-    return response()->json($objectOfObjects);
+    return response()->json($newContainer); // Data is Now Sorted 
 }); // * DONE 
 
 
@@ -69,29 +90,48 @@ Route::post('/f/get-invoices-within-range', function (Request $request) {
     } else {
         $end = date("Y-m-d");
     }
+
     $userDocEntries  = AlJouaiRequests::getAllCustomerDocEntries($phone);
     $entriesAndDates = AlJouaiRequests::getAllCustomerInvoicesDates($userDocEntries);
     $r  = AlJouaiRequests::getInvoiceEntriesONLYInRange($entriesAndDates, $start, $end);
-    $result = [];
-
-    foreach ($r as $key => $value) {
-        $result[] = desiredFormat($value);
+    $userInvoicesDates  = AlJouaiRequests::getAllCustomerInvoicesDates($r);
+    $otherArray  = [];
+    foreach ($userInvoicesDates as $key => $value) {
+        $newKey  = $value['DocDate'];
+        if (isset($otherArray[$newKey])) {
+            $otherArray[$newKey][] = $key;
+        } else {
+            $kwys = [];
+            $kwys[] = $key;
+            $otherArray[$newKey]  = $kwys;
+        }
     }
-    $objectOfObjects = [];
-    foreach ($result as $item) {
-        $key = key($item);
-        $value = current($item);
-        $objectOfObjects[$key] = $value;
+    ksort($otherArray);
+    $newArrayForDate = [];
+    $newContainer = [];
+    foreach ($otherArray as $date => $arrOfEntries) {
+        foreach ($arrOfEntries as $index => $docEntry) {
+            $newArrayForDate[$docEntry] = [
+                'Total' => AlJouaiRequests::getInvoiceDocTotal($docEntry),
+                'NumberOfItems' => AlJouaiRequests::getCountOfNumbers($docEntry),
+                'Dates' => AlJouaiRequests::getInvoiceDatesOnly($docEntry),
+            ];
+            if (isset($newContainer[$date])) {
+                $newContainer[$date][$docEntry][] = $newArrayForDate[$docEntry];
+            } else {
+                $newContainer[$date] = [];
+                $newContainer[$date][$docEntry][] = $newArrayForDate[$docEntry];
+            }
+        }
     }
-    return response()->json($objectOfObjects);
+    return response()->json($newContainer); // Data is Now Sorted 
 }); // * DONE 
-
 
 
 // http: //10.10.20.11:8000/api/f/specific-date
 // ! POST
 // {
-//     "date": "2023-03-30",
+//     "date": "2023-10-28",
 //     "phone": "0535575165"
 // }
 Route::post('/f/specific-date', function (Request $request) {
@@ -101,15 +141,35 @@ Route::post('/f/specific-date', function (Request $request) {
     $userDocEntries  = AlJouaiRequests::getAllCustomerDocEntries($userPhone);
     $entriesAndDates = AlJouaiRequests::getAllCustomerInvoicesDates($userDocEntries);
     $r = AlJouaiRequests::getInvoicesInDateEntryONLY($entriesAndDates, $specificDate);
-    $result = [];
-    foreach ($r as $key => $value) {
-        $result[] = desiredFormat($value);
+    $userInvoicesDates  = AlJouaiRequests::getAllCustomerInvoicesDates($r);
+    $otherArray  = [];
+    foreach ($userInvoicesDates as $key => $value) {
+        $newKey  = $value['DocDate'];
+        if (isset($otherArray[$newKey])) {
+            $otherArray[$newKey][] = $key;
+        } else {
+            $kwys = [];
+            $kwys[] = $key;
+            $otherArray[$newKey]  = $kwys;
+        }
     }
-    $objectOfObjects = [];
-    foreach ($result as $item) {
-        $key = key($item);
-        $value = current($item);
-        $objectOfObjects[$key] = $value;
+    ksort($otherArray);
+    $newArrayForDate = [];
+    $newContainer = [];
+    foreach ($otherArray as $date => $arrOfEntries) {
+        foreach ($arrOfEntries as $index => $docEntry) {
+            $newArrayForDate[$docEntry] = [
+                'Total' => AlJouaiRequests::getInvoiceDocTotal($docEntry),
+                'NumberOfItems' => AlJouaiRequests::getCountOfNumbers($docEntry),
+                'Dates' => AlJouaiRequests::getInvoiceDatesOnly($docEntry),
+            ];
+            if (isset($newContainer[$date])) {
+                $newContainer[$date][$docEntry][] = $newArrayForDate[$docEntry];
+            } else {
+                $newContainer[$date] = [];
+                $newContainer[$date][$docEntry][] = $newArrayForDate[$docEntry];
+            }
+        }
     }
-    return response()->json($objectOfObjects);
+    return response()->json($newContainer); // Data is Now Sorted 
 }); // * DONE 
