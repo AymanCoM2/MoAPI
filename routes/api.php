@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AlJouaiRequests;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -57,3 +58,8 @@ Route::post('/register-user', function (Request $request) {
 
 
 
+Route::get('/test-test/{doc}', function (Request $request) {
+    $doc = $request->doc  ; 
+    $result  =AlJouaiRequests::getSingleInvoiceItemsData($doc);
+    return response()->json($result);
+});

@@ -102,17 +102,17 @@ class AlJouaiRequests
     public static function getSingleInvoiceItemsData($docEntry)
     {
         $invoiceItemsQuery = "
-    SELECT
-    T0.DocNum , T1.DocEntry, T1.ItemCode, T1.Dscription, T1.Quantity , T1.unitMsr , L0.Location ,
-    T1.PriceBefDi , T1.DiscPrcnt , T1.Price , 
-    ROUND(T1.Price * T1.Quantity,2) 'TotalBefVAT',
-    ROUND(ROUND(T1.Price * T1.Quantity,2) * 1.05 ,2) 'TotalAftVAT'
-    FROM 
-    (TM.DBO.OINV T0 inner join TM.DBO.INV1 T1 on T1.DocEntry= T0.DocEntry)
-    LEFT JOIN (TM.DBO.OWHS W0 LEFT JOIN TM.DBO.OLCT L0 ON W0.Location = L0.Code)
-    ON W0.WhsCode = T1.WhsCode
-    WHERE T1.DocEntry IN (SELECT T0.DocEntry FROM TM.DBO.OINV T0 WHERE T0.CANCELED ='N') and 
-    T1.DocEntry = " . $docEntry;
+        SELECT
+        T0.DocNum , T1.DocEntry, T1.ItemCode, T1.Dscription, T1.Quantity , T1.unitMsr , L0.Location ,
+        T1.PriceBefDi , T1.DiscPrcnt , T1.Price , 
+        ROUND(T1.Price * T1.Quantity,2) 'TotalBefVAT',
+        ROUND(ROUND(T1.Price * T1.Quantity,2) * 1.05 ,2) 'TotalAftVAT'
+        FROM 
+        (OINV T0 inner join INV1 T1 on T1.DocEntry= T0.DocEntry)
+        LEFT JOIN (OWHS W0 LEFT JOIN OLCT L0 ON W0.Location = L0.Code)
+        ON W0.WhsCode = T1.WhsCode
+        WHERE T1.DocEntry IN (SELECT T0.DocEntry FROM OINV T0 WHERE T0.CANCELED ='N') and 
+        T1.DocEntry = " . $docEntry;
         $data = [];
         $stmt  = self::establishConnectionDB($invoiceItemsQuery);
         while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
