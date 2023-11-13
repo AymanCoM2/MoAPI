@@ -150,49 +150,50 @@ Route::get('/invoice/{docEntry}', function (Request $request) {
 //     "phone": "0535575165"
 // }
 Route::post('/f/get-invoices-within-range', function (Request $request) {
-    $jsonData = $request->json()->all();
-    $start = $jsonData['startdate'];
-    $phone = $jsonData['phone'];
-    $end = $jsonData['enddate'];
-    if (isset($end)) {
-        $end  = $jsonData['enddate'];
-    } else {
-        $end = date("Y-m-d");
-    }
-    $userDocEntries  = AlJouaiRequests::getAllCustomerDocEntries($phone);
-    $entriesAndDates = AlJouaiRequests::getAllCustomerInvoicesDates($userDocEntries);
-    $r  = AlJouaiRequests::getInvoiceEntriesONLYInRange($entriesAndDates, $start, $end);
-    $userInvoicesDates  = AlJouaiRequests::getAllCustomerInvoicesDates($r);
-    $otherArray  = [];
-    foreach ($userInvoicesDates as $key => $value) {
-        $newKey  = $value['DocDate'];
-        if (isset($otherArray[$newKey])) {
-            $otherArray[$newKey][] = $key;
-        } else {
-            $kwys = [];
-            $kwys[] = $key;
-            $otherArray[$newKey]  = $kwys;
-        }
-    }
-    ksort($otherArray);
-    $newArrayForDate = [];
-    $newContainer = [];
-    foreach ($otherArray as $date => $arrOfEntries) {
-        foreach ($arrOfEntries as $index => $docEntry) {
-            $newArrayForDate[$docEntry] = [
-                'Total' => AlJouaiRequests::getInvoiceDocTotal($docEntry),
-                'NumberOfItems' => AlJouaiRequests::getCountOfNumbers($docEntry),
-                'Dates' => AlJouaiRequests::getInvoiceDatesOnly($docEntry),
-            ];
-            if (isset($newContainer[$date])) {
-                $newContainer[$date][$docEntry][] = $newArrayForDate[$docEntry];
-            } else {
-                $newContainer[$date] = [];
-                $newContainer[$date][$docEntry][] = $newArrayForDate[$docEntry];
-            }
-        }
-    }
-    return response()->json($newContainer); // Data is Now Sorted 
+    // $jsonData = $request->json()->all();
+    // $start = $jsonData['startdate'];
+    // $phone = $jsonData['phone'];
+    // $end = $jsonData['enddate'];
+    // if (isset($end)) {
+    //     $end  = $jsonData['enddate'];
+    // } else {
+    //     $end = date("Y-m-d");
+    // }
+    // $userDocEntries  = AlJouaiRequests::getAllCustomerDocEntries($phone);
+    // $entriesAndDates = AlJouaiRequests::getAllCustomerInvoicesDates($userDocEntries);
+    // $r  = AlJouaiRequests::getInvoiceEntriesONLYInRange($entriesAndDates, $start, $end);
+    // $userInvoicesDates  = AlJouaiRequests::getAllCustomerInvoicesDates($r);
+    // $otherArray  = [];
+    // foreach ($userInvoicesDates as $key => $value) {
+    //     $newKey  = $value['DocDate'];
+    //     if (isset($otherArray[$newKey])) {
+    //         $otherArray[$newKey][] = $key;
+    //     } else {
+    //         $kwys = [];
+    //         $kwys[] = $key;
+    //         $otherArray[$newKey]  = $kwys;
+    //     }
+    // }
+    // ksort($otherArray);
+    // $newArrayForDate = [];
+    // $newContainer = [];
+    // foreach ($otherArray as $date => $arrOfEntries) {
+    //     foreach ($arrOfEntries as $index => $docEntry) {
+    //         $newArrayForDate[$docEntry] = [
+    //             'Total' => AlJouaiRequests::getInvoiceDocTotal($docEntry),
+    //             'NumberOfItems' => AlJouaiRequests::getCountOfNumbers($docEntry),
+    //             'Dates' => AlJouaiRequests::getInvoiceDatesOnly($docEntry),
+    //         ];
+    //         if (isset($newContainer[$date])) {
+    //             $newContainer[$date][$docEntry][] = $newArrayForDate[$docEntry];
+    //         } else {
+    //             $newContainer[$date] = [];
+    //             $newContainer[$date][$docEntry][] = $newArrayForDate[$docEntry];
+    //         }
+    //     }
+    // }
+    return response()->json([]); // Data is Now Sorted 
+    // return response()->json($newContainer); // Data is Now Sorted 
 }); // * DONE 
 
 
