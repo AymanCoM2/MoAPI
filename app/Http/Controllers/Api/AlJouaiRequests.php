@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 // 443
 use DateTime;
 use PDO;
+use stdClass;
 
 class AlJouaiRequests
 {
@@ -61,16 +62,56 @@ T0.CANCELED ='N' AND T0.DocEntry IN (SELECT * FROM TOP5)
             if (isset($data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"])) {
                 // $data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"][] = $row; // ! One TIME ONLY 
             } else {
+                $generalObject  = new stdClass();
+                $generalObject->DocEntry = $row->DocEntry;
+                $generalObject->InvoiceTitle = $row->InvoiceTitle;
+                $generalObject->CardName = $row->CardName;
+                $generalObject->CardCode = $row->CardCode;
+                $generalObject->LicTradNum = $row->LicTradNum;
+                $generalObject->DocDate = $row->DocDate;
+                $generalObject->DocDueDate = $row->DocDueDate;
+                $generalObject->DocNum = $row->DocNum;
+                $generalObject->Phone = $row->Phone;
+                $generalObject->HeX = $row->HeX;
+                $generalObject->NetTotalBefDisc = $row->NetTotalBefDisc;
+                $generalObject->DiscSum = $row->DiscSum;
+                $generalObject->NetTotalBefVAT = $row->NetTotalBefVAT;
+                $generalObject->VatSum = $row->VatSum;
+                $generalObject->DocTotal = $row->DocTotal;
+                $generalObject->U_NAME = $row->U_NAME;
+                $generalObject->Comments = $row->Comments;
                 $data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"] = [];
-                $data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"][] = $row;
+                $data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"][] = $generalObject;
             }
             // $data[] = $row;
 
             if (isset($data[$row->DocDate][$row->DocEntry]["invoiceItemsData"])) {
-                $data[$row->DocDate][$row->DocEntry]["invoiceItemsData"][] = $row;
+                $itemIbject  = new stdClass();
+                $itemIbject->ItemCode = $row->ItemCode;
+                $itemIbject->Dscription = $row->Dscription;
+                $itemIbject->Quantity = $row->Quantity;
+                $itemIbject->unitMsr = $row->unitMsr;
+                $itemIbject->Location = $row->Location;
+                $itemIbject->PriceBefDi = $row->PriceBefDi;
+                $itemIbject->DiscPrcnt = $row->DiscPrcnt;
+                $itemIbject->Price = $row->Price;
+                $itemIbject->TotalBefVAT = $row->TotalBefVAT;
+                $itemIbject->TotalAftVAT = $row->TotalAftVAT;
+                $data[$row->DocDate][$row->DocEntry]["invoiceItemsData"][] = $itemIbject;
             } else {
+                $itemIbject  = new stdClass();
+                $itemIbject->ItemCode = $row->ItemCode;
+                $itemIbject->Dscription = $row->Dscription;
+                $itemIbject->Quantity = $row->Quantity;
+                $itemIbject->unitMsr = $row->unitMsr;
+                $itemIbject->Location = $row->Location;
+                $itemIbject->PriceBefDi = $row->PriceBefDi;
+                $itemIbject->DiscPrcnt = $row->DiscPrcnt;
+                $itemIbject->Price = $row->Price;
+                $itemIbject->TotalBefVAT = $row->TotalBefVAT;
+                $itemIbject->TotalAftVAT = $row->TotalAftVAT;
                 $data[$row->DocDate][$row->DocEntry]["invoiceItemsData"] = [];
-                $data[$row->DocDate][$row->DocEntry]["invoiceItemsData"][] = $row;
+                $data[$row->DocDate][$row->DocEntry]["invoiceItemsData"][] = $itemIbject;
             }
         }
 
