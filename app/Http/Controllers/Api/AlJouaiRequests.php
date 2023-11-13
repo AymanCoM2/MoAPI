@@ -2,7 +2,7 @@
 
 
 namespace App\Http\Controllers\Api;
-
+// 443
 use DateTime;
 use PDO;
 
@@ -17,12 +17,145 @@ class AlJouaiRequests
         $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             "TrustServerCertificate" => true,
+            // encrypt=yes 
         ];
         $conn = new PDO("sqlsrv:server = $serverName; Database = $databaseName;", $uid, $pwd, $options);
         $stmt = $conn->query($inputQuery);
+        // $conn = null;
+        $conn = null;
         return $stmt;
     }
 
+    public static function tst($phone)
+    {
+        $qer = "
+       WITH TOP5 AS (SELECT TOP 5 T0.DocEntry FROM OINV T0 LEFT JOIN [@MobileNumber] M0 ON T0.DocEntry = M0.DocEntry  
+WHERE M0.Phone = '0505131036' ORDER BY T0.DocEntry DESC)
+SELECT T0.DocEntry, CASE WHEN ISNULL(T0.LicTradNum, '') = '' THEN N'فاتورة ضريبية مبسطة'
+ELSE N'فاتورة ضريبية' END AS 'InvoiceTitle',
+T0.CardName, T0.CardCode , T0.LicTradNum , T0.DocDate , T0.DocDueDate ,
+CONCAT(ISNULL(N1.SeriesName,'') ,T0.DocNum )  'DocNum',
+T0.DocNum , T1.DocEntry, M0.Phone, T1.ItemCode, T1.Dscription, T1.Quantity , T1.unitMsr , L0.Location ,
+T1.PriceBefDi , T1.DiscPrcnt , T1.Price , 
+ROUND(T1.Price * T1.Quantity,2) 'TotalBefVAT',
+ROUND(ROUND(T1.Price * T1.Quantity,2) * 1.05 ,2) 'TotalAftVAT', Q0.HeX,
+
+(T0.DocTotal + T0.DiscSum - T0.RoundDif - T0.VatSum) 'NetTotalBefDisc',
+T0.DiscPrcnt , T0.DiscSum ,
+(T0.DocTotal - T0.RoundDif - T0.VatSum) 'NetTotalBefVAT',
+T0.VatSum , T0.DocTotal , T00.U_NAME , T0.Comments, M0.Phone
+
+FROM (OINV T0 inner join INV1 T1 on T1.DocEntry= T0.DocEntry)
+LEFT JOIN (OWHS W0 LEFT JOIN OLCT L0 ON W0.Location = L0.Code)
+ON W0.WhsCode = T1.WhsCode
+LEFT JOIN AljouaiT.DBO.NNM1 N1 ON N1.Series = T0.Series
+LEFT JOIN  AljouaiT.DBO.OUSR T00 ON T0.USERSIGN = T00.INTERNAL_K
+LEFT JOIN [@MobileNumber] M0 ON T0.DocEntry = M0.DocEntry
+LEFT JOIN [@QRTV] Q0 ON T0.DocEntry = Q0.DocEntry
+WHERE 
+T0.CANCELED ='N' AND T0.DocEntry IN (SELECT * FROM TOP5)
+";
+        $data  = [];
+        $stmt = self::establishConnectionDB($qer);
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+            if (isset($data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"])) {
+                // $data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"][] = $row; // ! One TIME ONLY 
+            } else {
+                $data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"] = [];
+                $data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"][] = $row;
+            }
+            // $data[] = $row;
+
+            if (isset($data[$row->DocDate][$row->DocEntry]["invoiceItemsData"])) {
+                $data[$row->DocDate][$row->DocEntry]["invoiceItemsData"][] = $row;
+            } else {
+                $data[$row->DocDate][$row->DocEntry]["invoiceItemsData"] = [];
+                $data[$row->DocDate][$row->DocEntry]["invoiceItemsData"][] = $row;
+            }
+        }
+
+        // foreach ($data as $date => $arrayOfItems) {
+        //     foreach ($arrayOfItems as $item) {
+        //         if (isset($data[$date][$item->DocEntry])) {
+        //             $data[$date][$item->DocEntry][] = $item;
+        //         } else {
+        //             $data[$date][$item->DocEntry] = [];
+        //             $data[$date][$item->DocEntry][] = $item;
+        //         }
+        //     }
+        // }
+        return $data;
+    }
+
+
+    public static function headerFooterTopFive($phone)
+    {
+        // 0505131036
+        $query  = "
+        WITH TOP5 AS (SELECT TOP 5 T0.DocEntry 
+        FROM AljouaiT.DBO.OINV T0 LEFT JOIN AljouaiT.DBO.[@MobileNumber] M0 ON T0.DocEntry = M0.DocEntry  
+        WHERE M0.Phone = '" . $phone . "' ORDER BY T0.DocEntry DESC)
+        
+        SELECT T0.DocEntry, CASE WHEN ISNULL(T0.LicTradNum, '') = '' THEN N'فاتورة ضريبية مبسطة'
+        ELSE N'فاتورة ضريبية' END AS 'InvoiceTitle',
+        T0.CardName, T0.CardCode , M0.Phone ,T0.LicTradNum , T0.DocDate , T0.DocDueDate ,
+        CONCAT(ISNULL(N1.SeriesName,'') ,T0.DocNum )  'DocNum',
+        (T0.DocTotal + T0.DiscSum - T0.RoundDif - T0.VatSum) 'NetTotalBefDisc',
+        T0.DiscPrcnt , T0.DiscSum ,
+        (T0.DocTotal - T0.RoundDif - T0.VatSum) 'NetTotalBefVAT',
+        T0.VatSum , T0.DocTotal , T00.U_NAME , T0.Comments, Q0.HeX
+        FROM AljouaiT.DBO.OINV T0
+        LEFT JOIN AljouaiT.DBO.NNM1 N1 ON N1.Series = T0.Series
+        LEFT JOIN AljouaiT.DBO.OUSR T00 ON T0.USERSIGN = T00.INTERNAL_K
+        LEFT JOIN AljouaiT.DBO.[@MobileNumber] M0 ON T0.DocEntry = M0.DocEntry
+        LEFT JOIN AljouaiT.DBO.[@QRTV] Q0 ON T0.DocEntry = Q0.DocEntry
+        WHERE 
+        T0.CANCELED ='N' AND T0.DocEntry IN (SELECT * FROM TOP5)";
+
+        $data  = [];
+        $stmt = self::establishConnectionDB($query);
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+            // if (isset($data[$row->DocEntry])) {
+            //     $data[$row->DocEntry][] = $row;
+            // } else {
+            //     $data[$row->DocEntry] = [];
+            //     $data[$row->DocEntry][] = $row;
+            // }
+            $data[] = $row;
+        }
+        return $data;
+    }
+
+    public static function itemsDataTopFive($phone)
+    {
+        $query = "
+        WITH TOP5 AS (SELECT TOP 5 T0.DocEntry 
+FROM AljouaiT.DBO.OINV T0 LEFT JOIN AljouaiT.DBO.[@MobileNumber] M0 ON T0.DocEntry = M0.DocEntry  
+WHERE M0.Phone = '" . $phone . "' AND T0.CANCELED ='N' ORDER BY T0.DocEntry DESC)
+SELECT
+T0.DocNum , T1.DocEntry, T1.ItemCode, T1.Dscription, T1.Quantity , T1.unitMsr , L0.Location ,
+T1.PriceBefDi , T1.DiscPrcnt , T1.Price , 
+ROUND(T1.Price * T1.Quantity,2) 'TotalBefVAT',
+ROUND(ROUND(T1.Price * T1.Quantity,2) * 1.05 ,2) 'TotalAftVAT'
+FROM 
+(AljouaiT.DBO.OINV T0 inner join AljouaiT.DBO.INV1 T1 on T1.DocEntry= T0.DocEntry)
+LEFT JOIN (AljouaiT.DBO.OWHS W0 LEFT JOIN AljouaiT.DBO.OLCT L0 ON W0.Location = L0.Code)
+ON W0.WhsCode = T1.WhsCode
+WHERE T0.DocEntry IN (SELECT * FROM TOP5)";
+
+        $data  = [];
+        $stmt = self::establishConnectionDB($query);
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+            // if (isset($data[$row->DocEntry])) {
+            //     $data[$row->DocEntry][] = $row;
+            // } else {
+            //     $data[$row->DocEntry] = [];
+            //     $data[$row->DocEntry][] = $row;
+            // }
+            $data[] = $row;
+        }
+        return $data;
+    }
 
     public static function getQrCode($docEntry)
     {
@@ -127,7 +260,7 @@ class AlJouaiRequests
     SELECT
     T1.DocEntry , count(T1.ItemCode) as Totalz
     FROM 
-    (TM.DBO.OINV T0 inner join TM.DBO.INV1 T1 on T1.DocEntry= T0.DocEntry)
+    (OINV T0 inner join INV1 T1 on T1.DocEntry= T0.DocEntry)
     WHERE T1.DocEntry = " . $docEntry . "
     GROUP BY T1.DocEntry ";
         $data = [];
@@ -253,7 +386,7 @@ class AlJouaiRequests
         return $res->DocTotal;
     }
 
-    public static function  getNumberOfItemsInvoice($docEntry)
+    public static function getNumberOfItemsInvoice($docEntry)
     {
         $res = self::getSingleInvoiceItemsData($docEntry);
         return count($res);
