@@ -13,11 +13,10 @@ use Illuminate\Support\Facades\Hash;
 //     return $request->user();
 // });
 
-Route::group([], __DIR__ . '/apiOne.php'); // * Ok 
-Route::group([], __DIR__ . '/apiTwo.php'); // * ok
-Route::group([], __DIR__ . '/apiThree.php'); // * ok
-Route::group([], __DIR__ . '/apiFour.php'); // ! WORKING On 
-
+Route::group([], __DIR__ . '/B1_api.php'); // * Ok 
+Route::group([], __DIR__ . '/B2_api.php'); // * ok
+Route::group([], __DIR__ . '/B3_api.php'); // * ok
+Route::group([], __DIR__ . '/B4_api.php'); // ! WORKING On 
 
 Route::post('/login', function (Request $request) {
     $jsonData = $request->json()->all();

@@ -26,6 +26,185 @@ class AlJouaiRequests
         $conn = null;
         return $stmt;
     }
+    // 
+    public static function SQL_get_data_range($startDate, $endDate)
+    {
+        // Header Footer Within Range
+        $qerHeaderFooter = "
+        WITH DateRange AS (SELECT T0.DocEntry 
+        FROM AljouaiT.DBO.OINV T0 LEFT JOIN AljouaiT.DBO.[@MobileNumber] M0 ON T0.DocEntry = M0.DocEntry  
+        WHERE M0.Phone = '0505131036' AND T0.CANCELED ='N' AND T0.DocDate >= '2023-03-01' AND T0.DocDate <= '2023-04-29')
+        SELECT
+        T0.DocEntry, CASE WHEN ISNULL(T0.LicTradNum, '') = '' THEN N'فاتورة ضريبية مبسطة'
+        ELSE N'فاتورة ضريبية' END AS 'InvoiceTitle',
+        T0.CardName, T0.CardCode , M0.Phone ,T0.LicTradNum , T0.DocDate , T0.DocDueDate ,
+        CONCAT(ISNULL(N1.SeriesName,'') ,T0.DocNum )  'DocNum',
+        T0.DocNum , T1.DocEntry, T1.ItemCode, T1.Dscription, T1.Quantity , T1.unitMsr , L0.Location ,
+        T1.PriceBefDi , T1.DiscPrcnt , T1.Price , 
+        ROUND(T1.Price * T1.Quantity,2) 'TotalBefVAT',
+        ROUND(ROUND(T1.Price * T1.Quantity,2) * 1.05 ,2) 'TotalAftVAT',
+        (T0.DocTotal + T0.DiscSum - T0.RoundDif - T0.VatSum) 'NetTotalBefDisc',
+        T0.DiscPrcnt , T0.DiscSum ,
+        (T0.DocTotal - T0.RoundDif - T0.VatSum) 'NetTotalBefVAT',
+        T0.VatSum , T0.DocTotal , T00.U_NAME , T0.Comments, Q0.HeX
+        FROM 
+        (AljouaiT.DBO.OINV T0 inner join AljouaiT.DBO.INV1 T1 on T1.DocEntry= T0.DocEntry)
+        LEFT JOIN (AljouaiT.DBO.OWHS W0 LEFT JOIN AljouaiT.DBO.OLCT L0 ON W0.Location = L0.Code) ON W0.WhsCode = T1.WhsCode
+        LEFT JOIN AljouaiT.DBO.OUSR T00 ON T0.USERSIGN = T00.INTERNAL_K
+        LEFT JOIN AljouaiT.DBO.NNM1 N1 ON N1.Series = T0.Series
+        LEFT JOIN AljouaiT.DBO.[@MobileNumber] M0 ON T0.DocEntry = M0.DocEntry
+        LEFT JOIN AljouaiT.DBO.[@QRTV] Q0 ON T0.DocEntry = Q0.DocEntry
+        WHERE T0.DocEntry IN (SELECT * FROM DateRange)
+";
+        $data  = [];
+        $stmt = self::establishConnectionDB($qerHeaderFooter);
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+            if (isset($data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"])) {
+                // $data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"][] = $row; // ! One TIME ONLY 
+            } else {
+                $generalObject  = new stdClass();
+                $generalObject->DocEntry = $row->DocEntry;
+                $generalObject->InvoiceTitle = $row->InvoiceTitle;
+                $generalObject->CardName = $row->CardName;
+                $generalObject->CardCode = $row->CardCode;
+                $generalObject->LicTradNum = $row->LicTradNum;
+                $generalObject->DocDate = $row->DocDate;
+                $generalObject->DocDueDate = $row->DocDueDate;
+                $generalObject->DocNum = $row->DocNum;
+                $generalObject->Phone = $row->Phone;
+                $generalObject->HeX = $row->HeX;
+                $generalObject->NetTotalBefDisc = $row->NetTotalBefDisc;
+                $generalObject->DiscSum = $row->DiscSum;
+                $generalObject->NetTotalBefVAT = $row->NetTotalBefVAT;
+                $generalObject->VatSum = $row->VatSum;
+                $generalObject->DocTotal = $row->DocTotal;
+                $generalObject->U_NAME = $row->U_NAME;
+                $generalObject->Comments = $row->Comments;
+                $data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"] = [];
+                $data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"][] = $generalObject;
+            }
+            // $data[] = $row;
+
+            if (isset($data[$row->DocDate][$row->DocEntry]["invoiceItemsData"])) {
+                $itemIbject  = new stdClass();
+                $itemIbject->ItemCode = $row->ItemCode;
+                $itemIbject->Dscription = $row->Dscription;
+                $itemIbject->Quantity = $row->Quantity;
+                $itemIbject->unitMsr = $row->unitMsr;
+                $itemIbject->Location = $row->Location;
+                $itemIbject->PriceBefDi = $row->PriceBefDi;
+                $itemIbject->DiscPrcnt = $row->DiscPrcnt;
+                $itemIbject->Price = $row->Price;
+                $itemIbject->TotalBefVAT = $row->TotalBefVAT;
+                $itemIbject->TotalAftVAT = $row->TotalAftVAT;
+                $data[$row->DocDate][$row->DocEntry]["invoiceItemsData"][] = $itemIbject;
+            } else {
+                $itemIbject  = new stdClass();
+                $itemIbject->ItemCode = $row->ItemCode;
+                $itemIbject->Dscription = $row->Dscription;
+                $itemIbject->Quantity = $row->Quantity;
+                $itemIbject->unitMsr = $row->unitMsr;
+                $itemIbject->Location = $row->Location;
+                $itemIbject->PriceBefDi = $row->PriceBefDi;
+                $itemIbject->DiscPrcnt = $row->DiscPrcnt;
+                $itemIbject->Price = $row->Price;
+                $itemIbject->TotalBefVAT = $row->TotalBefVAT;
+                $itemIbject->TotalAftVAT = $row->TotalAftVAT;
+                $data[$row->DocDate][$row->DocEntry]["invoiceItemsData"] = [];
+                $data[$row->DocDate][$row->DocEntry]["invoiceItemsData"][] = $itemIbject;
+            }
+        }
+        return $data;
+    }
+    public static function SQL_get_data_specific_date($specificDate)
+    {
+        $qer = "
+        WITH SpecificDate AS (SELECT T0.DocEntry 
+FROM AljouaiT.DBO.OINV T0 LEFT JOIN AljouaiT.DBO.[@MobileNumber] M0 ON T0.DocEntry = M0.DocEntry  
+WHERE M0.Phone = '0505131036' AND T0.CANCELED ='N' AND T0.DocDate = '2023-03-29' )
+SELECT
+T0.DocEntry, CASE WHEN ISNULL(T0.LicTradNum, '') = '' THEN N'فاتورة ضريبية مبسطة'
+ELSE N'فاتورة ضريبية' END AS 'InvoiceTitle',
+T0.CardName, T0.CardCode , M0.Phone ,T0.LicTradNum , T0.DocDate , T0.DocDueDate ,
+CONCAT(ISNULL(N1.SeriesName,'') ,T0.DocNum )  'DocNum',
+T0.DocNum , T1.DocEntry, T1.ItemCode, T1.Dscription, T1.Quantity , T1.unitMsr , L0.Location ,
+T1.PriceBefDi , T1.DiscPrcnt , T1.Price , 
+ROUND(T1.Price * T1.Quantity,2) 'TotalBefVAT',
+ROUND(ROUND(T1.Price * T1.Quantity,2) * 1.05 ,2) 'TotalAftVAT',
+(T0.DocTotal + T0.DiscSum - T0.RoundDif - T0.VatSum) 'NetTotalBefDisc',
+T0.DiscPrcnt , T0.DiscSum ,
+(T0.DocTotal - T0.RoundDif - T0.VatSum) 'NetTotalBefVAT',
+T0.VatSum , T0.DocTotal , T00.U_NAME , T0.Comments, Q0.HeX
+FROM 
+(AljouaiT.DBO.OINV T0 inner join AljouaiT.DBO.INV1 T1 on T1.DocEntry= T0.DocEntry)
+LEFT JOIN (AljouaiT.DBO.OWHS W0 LEFT JOIN AljouaiT.DBO.OLCT L0 ON W0.Location = L0.Code) ON W0.WhsCode = T1.WhsCode
+LEFT JOIN AljouaiT.DBO.OUSR T00 ON T0.USERSIGN = T00.INTERNAL_K
+LEFT JOIN AljouaiT.DBO.NNM1 N1 ON N1.Series = T0.Series
+LEFT JOIN AljouaiT.DBO.[@MobileNumber] M0 ON T0.DocEntry = M0.DocEntry
+LEFT JOIN AljouaiT.DBO.[@QRTV] Q0 ON T0.DocEntry = Q0.DocEntry
+WHERE T0.DocEntry IN (SELECT * FROM SpecificDate)
+";
+        $data  = [];
+        $stmt = self::establishConnectionDB($qer);
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+            if (isset($data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"])) {
+                // $data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"][] = $row; // ! One TIME ONLY 
+            } else {
+                $generalObject  = new stdClass();
+                $generalObject->DocEntry = $row->DocEntry;
+                $generalObject->InvoiceTitle = $row->InvoiceTitle;
+                $generalObject->CardName = $row->CardName;
+                $generalObject->CardCode = $row->CardCode;
+                $generalObject->LicTradNum = $row->LicTradNum;
+                $generalObject->DocDate = $row->DocDate;
+                $generalObject->DocDueDate = $row->DocDueDate;
+                $generalObject->DocNum = $row->DocNum;
+                $generalObject->Phone = $row->Phone;
+                $generalObject->HeX = $row->HeX;
+                $generalObject->NetTotalBefDisc = $row->NetTotalBefDisc;
+                $generalObject->DiscSum = $row->DiscSum;
+                $generalObject->NetTotalBefVAT = $row->NetTotalBefVAT;
+                $generalObject->VatSum = $row->VatSum;
+                $generalObject->DocTotal = $row->DocTotal;
+                $generalObject->U_NAME = $row->U_NAME;
+                $generalObject->Comments = $row->Comments;
+                $data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"] = [];
+                $data[$row->DocDate][$row->DocEntry]["invoiceGeneralData"][] = $generalObject;
+            }
+            // $data[] = $row;
+
+            if (isset($data[$row->DocDate][$row->DocEntry]["invoiceItemsData"])) {
+                $itemIbject  = new stdClass();
+                $itemIbject->ItemCode = $row->ItemCode;
+                $itemIbject->Dscription = $row->Dscription;
+                $itemIbject->Quantity = $row->Quantity;
+                $itemIbject->unitMsr = $row->unitMsr;
+                $itemIbject->Location = $row->Location;
+                $itemIbject->PriceBefDi = $row->PriceBefDi;
+                $itemIbject->DiscPrcnt = $row->DiscPrcnt;
+                $itemIbject->Price = $row->Price;
+                $itemIbject->TotalBefVAT = $row->TotalBefVAT;
+                $itemIbject->TotalAftVAT = $row->TotalAftVAT;
+                $data[$row->DocDate][$row->DocEntry]["invoiceItemsData"][] = $itemIbject;
+            } else {
+                $itemIbject  = new stdClass();
+                $itemIbject->ItemCode = $row->ItemCode;
+                $itemIbject->Dscription = $row->Dscription;
+                $itemIbject->Quantity = $row->Quantity;
+                $itemIbject->unitMsr = $row->unitMsr;
+                $itemIbject->Location = $row->Location;
+                $itemIbject->PriceBefDi = $row->PriceBefDi;
+                $itemIbject->DiscPrcnt = $row->DiscPrcnt;
+                $itemIbject->Price = $row->Price;
+                $itemIbject->TotalBefVAT = $row->TotalBefVAT;
+                $itemIbject->TotalAftVAT = $row->TotalAftVAT;
+                $data[$row->DocDate][$row->DocEntry]["invoiceItemsData"] = [];
+                $data[$row->DocDate][$row->DocEntry]["invoiceItemsData"][] = $itemIbject;
+            }
+        }
+        return $data;
+    }
+
 
     public static function tst($phone)
     {
@@ -127,7 +306,6 @@ T0.CANCELED ='N' AND T0.DocEntry IN (SELECT * FROM TOP5)
         // }
         return $data;
     }
-
 
     public static function headerFooterTopFive($phone)
     {
